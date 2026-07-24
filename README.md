@@ -67,7 +67,11 @@ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-
 
 ## 下载
 
-预编译 exe 可从 [GitHub Releases](../../releases) 直接下载（直链），无需自己编译。
+预编译 exe 可直接下载，无需自己编译：
+
+- **国内直链（推荐，国内下载快）**：
+  `https://ghproxy.net/https://github.com/1fzx23/local-model-launcher/releases/download/v1.0.0/launcher-portable.exe`
+- **GitHub 官方**：[Releases 页面](../../releases)（国内可能较慢）
 
 ## 许可证
 
