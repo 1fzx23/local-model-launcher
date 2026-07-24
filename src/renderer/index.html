@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>本地 AI 模型启动器</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- ============ Sidebar ============ -->
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+      <div>
+        <div class="brand-name">Model Launcher</div>
+        <div class="brand-sub">本地大模型 · 一键启动</div>
+      </div>
+    </div>
+
+    <nav id="nav">
+      <button class="nav-btn active" data-view="llm"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>对话模型</button>
+      <button class="nav-btn" data-view="sd"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>文生图</button>
+      <button class="nav-btn" data-view="runtime"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>运行环境</button>
+      <button class="nav-btn" data-view="discover"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>本地发现</button>
+      <button class="nav-btn" data-view="settings"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>设置</button>
+    </nav>
+
+    <div id="running-panel">
+      <div class="rp-title">运行中服务</div>
+      <div id="running-list"><div class="rp-empty">暂无运行中的服务</div></div>
+    </div>
+
+    <div class="side-foot">
+      <button class="ghost-btn" id="btn-open-dir"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.17a2 2 0 0 1 1.41.59l1.83 1.83A2 2 0 0 0 12.83 6H18"/></svg> 打开模型目录</button>
+      <div id="ota-badge" class="ota-badge hidden"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64L3 16"/><path d="M3 21v-5h5"/></svg> 模型清单已更新</div>
+    </div>
+  </aside>
+
+  <!-- ============ Main ============ -->
+  <main id="main">
+    <!-- Library views -->
+    <section id="view-library">
+      <header class="lib-head">
+        <h1 id="lib-title">对话模型</h1>
+        <div class="lib-actions">
+          <input id="search" type="text" placeholder="搜索模型…">
+          <button class="ghost-btn" id="btn-refresh-manifest" title="从云端拉取最新模型清单"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64L3 16"/><path d="M3 21v-5h5"/></svg> 检查清单更新</button>
+        </div>
+      </header>
+      <div id="cards"></div>
+    </section>
+
+    <!-- Discover view -->
+    <section id="view-discover" class="hidden">
+      <header class="lib-head">
+        <h1>本地发现</h1>
+        <div class="lib-actions">
+          <button class="ghost-btn" id="btn-scan-local"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> 扫描模型文件夹</button>
+        </div>
+      </header>
+      <div class="discover-info">在 <b id="discover-dir">…</b> 下递归扫描 <code>.gguf</code> / <code>.safetensors</code> 文件，找出未登记到清单里的本地模型，可直接选运行环境启动（适合你已经手动下载好的模型）。</div>
+      <div id="discover-cards"></div>
+    </section>
+
+    <!-- Settings view -->
+    <section id="view-settings" class="hidden">
+      <header class="lib-head"><h1>设置</h1></header>
+      <div class="settings-body">
+        <div class="set-group">
+          <label>模型仓库目录（models 与运行环境所在文件夹）</label>
+          <div class="row">
+            <input id="set-basedir" type="text" readonly>
+            <button class="primary-btn" id="btn-pick-dir">选择目录</button>
+          </div>
+        </div>
+        <div class="set-group">
+          <label>OTA 清单地址（在线更新模型下载目录，可托管于 GitHub / Gitee / 任意静态服务器）</label>
+          <div class="row">
+            <input id="set-manifest" type="text" placeholder="https://…/manifest.json">
+            <button class="primary-btn" id="btn-save-manifest">保存</button>
+          </div>
+          <div class="hint">当前内置清单版本：<b id="manifest-ver">-</b>，云端版本号更高时自动覆盖生效。</div>
+        </div>
+        <div class="set-group">
+          <label>LLM API 监听地址（供其它 AI 软件调用：127.0.0.1 仅本机，0.0.0.0 含局域网）</label>
+          <div class="row">
+            <input id="set-apihost" type="text" placeholder="127.0.0.1">
+            <button class="primary-btn" id="btn-save-apihost">保存</button>
+          </div>
+          <div class="hint">启动对话模型后，可在「运行中服务」里看到 OpenAI 兼容 API 地址：<b>http://&lt;地址&gt;:8080/v1</b></div>
+        </div>
+        <div class="set-group">
+          <label>LLM 生成长度上限 -n（默认 200）</label>
+          <div class="row">
+            <input id="set-npredict" type="number" min="-1" max="8192">
+            <button class="primary-btn" id="btn-save-npredict">保存</button>
+          </div>
+        </div>
+        <div class="set-group">
+          <label>CPU 线程数 -t（0 = 自动）</label>
+          <div class="row">
+            <input id="set-threads" type="number" min="0" max="64">
+            <button class="primary-btn" id="btn-save-threads">保存</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Right dock: terminal + webview ============ -->
+  <div id="dock" class="collapsed">
+    <div id="dock-resizer" title="拖动调整宽度"></div>
+    <div id="dock-head">
+      <div id="dock-tabs">
+        <button class="dock-tab active" data-tab="term"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> 终端</button>
+        <button class="dock-tab" data-tab="web"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> 模型网页</button>
+      </div>
+      <div id="dock-meta"><span id="dock-status" class="dot gray"></span><span id="dock-name">未启动</span></div>
+      <button id="dock-toggle" title="展开/收起"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
+    </div>
+    <div id="dock-body">
+      <div id="pane-term"><div id="terminal"></div></div>
+      <div id="pane-web" class="hidden">
+        <div id="web-bar">
+          <button id="web-back" title="后退"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          <button id="web-reload" title="刷新"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64L3 16"/><path d="M3 21v-5h5"/></svg></button>
+          <input id="web-url" readonly>
+          <button id="web-external" title="在浏览器中打开"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button>
+        </div>
+        <webview id="webview" src="about:blank" allowpopups></webview>
+        <div id="web-loading" class="web-overlay hidden"><span class="spinner"></span><span>正在加载模型网页…</span></div>
+        <div id="web-fallback" class="web-overlay hidden"></div>
+        <div id="web-placeholder">模型服务启动后，网页界面将自动加载到这里</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
