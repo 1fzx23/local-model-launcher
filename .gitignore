@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# electron-builder output (portable exe goes to GitHub Releases instead)
+dist/
+build/
+
+# logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

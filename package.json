@@ -1,0 +1,37 @@
+{
+  "name": "local-model-launcher",
+  "productName": "Local Model Launcher",
+  "version": "1.0.0",
+  "description": "One-click launcher for local LLM and Stable Diffusion models with embedded terminal and web UI",
+  "main": "src/main.js",
+  "author": "pc",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable",
+    "dist:dir": "electron-builder --win dir"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.pc.localmodellauncher",
+    "productName": "Local Model Launcher",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": ["portable"],
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "LocalModelLauncher-${version}.exe"
+    },
+    "compression": "store"
+  }
+}

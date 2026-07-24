@@ -1,0 +1,536 @@
+{
+  "manifestVersion": 2,
+  "updatedAt": "2026-07-24",
+  "note": "OTA catalog (Windows only). Host a newer copy of this file at config.manifestUrl and bump manifestVersion to push updates (fix URLs / add models) without reinstalling the app.",
+  "runtimes": [
+    {
+      "id": "cpu",
+      "name": "llama.cpp CPU (x64)",
+      "dir": "llama-b9405-bin-win-cpu-x64",
+      "exe": "llama-server.exe",
+      "gpu": false,
+      "desc": "纯 CPU 推理，兼容一切电脑，无需显卡。内置默认环境。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b9405", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9405/llama-b9405-bin-win-cpu-x64.zip" }
+      ]
+    },
+    {
+      "id": "vulkan",
+      "name": "llama.cpp Vulkan (x64)",
+      "dir": "llama-b9437-bin-win-vulkan-x64",
+      "exe": "llama-server.exe",
+      "gpu": true,
+      "desc": "通用 GPU 加速：Intel 核显 / AMD / NVIDIA 全兼容，推荐核显用户使用。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b9437", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9437/llama-b9437-bin-win-vulkan-x64.zip" }
+      ]
+    },
+    {
+      "id": "cuda124",
+      "name": "llama.cpp CUDA 12.4 (x64)",
+      "dir": "llama-b9963-bin-win-cuda-12.4-x64",
+      "exe": "llama-server.exe",
+      "gpu": true,
+      "desc": "NVIDIA 显卡 + CUDA 12.4 驱动，速度最快。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b9963", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9963/llama-b9963-bin-win-cuda-12.4-x64.zip" }
+      ]
+    },
+    {
+      "id": "cuda133",
+      "name": "llama.cpp CUDA 13.3 (x64)",
+      "dir": "llama-b9963-bin-win-cuda-13.3-x64",
+      "exe": "llama-server.exe",
+      "gpu": true,
+      "desc": "NVIDIA 显卡 + CUDA 13.3 最新驱动。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b9963", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9963/llama-b9963-bin-win-cuda-13.3-x64.zip" }
+      ]
+    },
+    {
+      "id": "sycl",
+      "name": "llama.cpp SYCL (Intel GPU, x64)",
+      "dir": "llama-b10066-bin-win-sycl-x64",
+      "exe": "llama-server.exe",
+      "gpu": true,
+      "desc": "Intel Arc / 核显专用 SYCL 后端，Intel 平台性能优于 Vulkan。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b10066", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10066/llama-b10066-bin-win-sycl-x64.zip" }
+      ]
+    },
+    {
+      "id": "hip",
+      "name": "llama.cpp HIP (AMD GPU, x64)",
+      "dir": "llama-b10066-bin-win-hip-x64",
+      "exe": "llama-server.exe",
+      "gpu": true,
+      "desc": "AMD 独显专用 HIP/ROCm 后端。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b10066", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10066/llama-b10066-bin-win-hip-x64.zip" }
+      ]
+    },
+    {
+      "id": "openvino",
+      "name": "llama.cpp OpenVINO (x64)",
+      "dir": "llama-b10066-bin-win-openvino-x64",
+      "exe": "llama-server.exe",
+      "gpu": true,
+      "desc": "Intel OpenVINO 后端，CPU/核显/NPU 协同加速。",
+      "page": "https://github.com/ggml-org/llama.cpp/releases",
+      "sources": [
+        { "label": "GitHub b10066", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10066/llama-b10066-bin-win-openvino-x64.zip" }
+      ]
+    },
+    {
+      "id": "sdvulkan",
+      "name": "stable-diffusion.cpp Vulkan (x64)",
+      "dir": "sd-vulkan-x64",
+      "exe": "sd-server.exe",
+      "gpu": true,
+      "desc": "文生图后端（Vulkan 通用 GPU 加速），含 sd-server.exe 网页界面。内置默认环境。",
+      "page": "https://github.com/leejet/stable-diffusion.cpp/releases",
+      "sources": [
+        { "label": "OTA 待更新", "url": "OTA:请在 releases 页面下载 win-vulkan-x64 压缩包解压到 sd-vulkan-x64 目录" }
+      ]
+    },
+    {
+      "id": "sdcpu",
+      "name": "stable-diffusion.cpp CPU AVX2 (x64)",
+      "dir": "sd-avx2-x64",
+      "exe": "sd-server.exe",
+      "gpu": false,
+      "desc": "文生图纯 CPU 后端（AVX2），无显卡也能出图（速度较慢）。",
+      "page": "https://github.com/leejet/stable-diffusion.cpp/releases",
+      "sources": [
+        { "label": "OTA 待更新", "url": "OTA:请在 releases 页面下载 win-avx2-x64 压缩包解压到 sd-avx2-x64 目录" }
+      ]
+    },
+    {
+      "id": "sdcuda",
+      "name": "stable-diffusion.cpp CUDA 12 (x64)",
+      "dir": "sd-cuda12-x64",
+      "exe": "sd-server.exe",
+      "gpu": true,
+      "desc": "文生图 NVIDIA CUDA 后端，出图速度最快。",
+      "page": "https://github.com/leejet/stable-diffusion.cpp/releases",
+      "sources": [
+        { "label": "OTA 待更新", "url": "OTA:请在 releases 页面下载 win-cuda12-x64 压缩包解压到 sd-cuda12-x64 目录" }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "id": "qwen25-1.5b",
+      "name": "Qwen2.5-1.5B-Instruct",
+      "file": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cpu",
+      "sizeText": "1.0 GB", "tags": ["轻量", "CPU友好", "内置"],
+      "desc": "轻量对话模型，CPU 即可流畅运行，应用内置推荐入门款。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/master/qwen2.5-1.5b-instruct-q4_k_m.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf" }
+      ]
+    },
+    {
+      "id": "qwen35-0.8b",
+      "name": "Qwen3.5-0.8B",
+      "file": "Qwen3.5-0.8B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cpu",
+      "sizeText": "0.6 GB", "tags": ["极致轻量", "CPU友好"],
+      "desc": "超小体积、响应极快，适合快速问答与老旧设备。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen3.5-0.8B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen3.5-0.8B-GGUF/resolve/master/Qwen3.5-0.8B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen3.5-0.8B-GGUF/resolve/main/Qwen3.5-0.8B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "minicpm5-1b",
+      "name": "MiniCPM5-1B",
+      "file": "MiniCPM5-1B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cpu",
+      "sizeText": "0.8 GB", "tags": ["轻量", "CPU友好"],
+      "desc": "面壁智能端侧小钢炮，1B 级别表现优秀。",
+      "page": "https://modelscope.cn/models/OpenBMB/MiniCPM5-1B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/OpenBMB/MiniCPM5-1B-GGUF/resolve/master/MiniCPM5-1B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "qwen35-4b",
+      "name": "Qwen3.5-4B",
+      "file": "Qwen3.5-4B.Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "2.5 GB", "tags": ["均衡", "GPU推荐"],
+      "desc": "日常主力档：能力与速度均衡，核显即可流畅运行。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen3.5-4B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen3.5-4B-GGUF/resolve/master/Qwen3.5-4B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "qwen25-7b",
+      "name": "Qwen2.5-7B-Instruct",
+      "file": "qwen2.5-7b-instruct-q4_k_m.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "4.7 GB", "tags": ["7B", "GPU推荐"],
+      "desc": "经典 7B 通用模型，中英文能力扎实，16GB 内存即可运行。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen2.5-7B-Instruct-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/master/qwen2.5-7b-instruct-q4_k_m.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q4_k_m.gguf" }
+      ]
+    },
+    {
+      "id": "qwen3-8b",
+      "name": "Qwen3-8B",
+      "file": "Qwen3-8B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "5.0 GB", "tags": ["8B", "思考模式", "GPU推荐"],
+      "desc": "Qwen3 代 8B，支持思考/非思考双模式，推理能力强。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen3-8B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen3-8B-GGUF/resolve/master/Qwen3-8B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "llama31-8b",
+      "name": "Llama-3.1-8B-Instruct",
+      "file": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "4.9 GB", "tags": ["8B", "英文强", "GPU推荐"],
+      "desc": "Meta 开源旗舰 8B，英文与代码能力出色。",
+      "page": "https://hf-mirror.com/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf" },
+        { "label": "HuggingFace", "url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "minicpm41-8b",
+      "name": "MiniCPM4.1-8B",
+      "file": "MiniCPM4.1-8B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "5.0 GB", "tags": ["8B", "GPU推荐"],
+      "desc": "面壁 8B 端侧旗舰，长文本与中文能力强。",
+      "page": "https://modelscope.cn/models/OpenBMB/MiniCPM4.1-8B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/OpenBMB/MiniCPM4.1-8B-GGUF/resolve/master/MiniCPM4.1-8B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "glm4-9b",
+      "name": "GLM-4-9B-Chat",
+      "file": "glm-4-9b-chat-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "6.2 GB", "tags": ["9B", "中文强"],
+      "desc": "智谱 GLM-4 开源 9B，中文对话与工具调用能力优秀。",
+      "page": "https://hf-mirror.com/bartowski/glm-4-9b-chat-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/bartowski/glm-4-9b-chat-GGUF/resolve/main/glm-4-9b-chat-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "gemma3-12b",
+      "name": "Gemma-3-12B-it",
+      "file": "gemma-3-12b-it-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "7.3 GB", "tags": ["12B", "多语言"],
+      "desc": "Google Gemma 3 代 12B，多语言与长上下文表现好。",
+      "page": "https://hf-mirror.com/unsloth/gemma-3-12b-it-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/unsloth/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q4_K_M.gguf" },
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/unsloth/gemma-3-12b-it-GGUF/resolve/master/gemma-3-12b-it-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "phi4-14b",
+      "name": "Phi-4 (14B)",
+      "file": "phi-4-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "9.1 GB", "tags": ["14B", "数理强"],
+      "desc": "微软 Phi-4，14B 级别数学与逻辑推理标杆。",
+      "page": "https://hf-mirror.com/unsloth/phi-4-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/unsloth/phi-4-GGUF/resolve/main/phi-4-Q4_K_M.gguf" },
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/unsloth/phi-4-GGUF/resolve/master/phi-4-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "qwen3-14b",
+      "name": "Qwen3-14B",
+      "file": "Qwen3-14B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "9.0 GB", "tags": ["14B", "思考模式", "需16GB内存"],
+      "desc": "Qwen3 代 14B，综合能力接近上代 32B。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen3-14B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen3-14B-GGUF/resolve/master/Qwen3-14B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen3-14B-GGUF/resolve/main/Qwen3-14B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "r1-distill-14b",
+      "name": "DeepSeek-R1-Distill-Qwen-14B",
+      "file": "DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "vulkan",
+      "sizeText": "9.0 GB", "tags": ["14B", "深度推理", "需16GB内存"],
+      "desc": "DeepSeek R1 蒸馏版 14B，带思维链的强推理模型。",
+      "page": "https://modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/resolve/master/DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "mistral-small-24b",
+      "name": "Mistral-Small-24B-Instruct",
+      "file": "Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cuda124",
+      "sizeText": "14.3 GB", "tags": ["24B", "需32GB内存"],
+      "desc": "Mistral 24B，欧洲开源旗舰，接近 70B 级体验。",
+      "page": "https://hf-mirror.com/bartowski/Mistral-Small-24B-Instruct-2501-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/main/Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "gemma3-27b",
+      "name": "Gemma-3-27B-it",
+      "file": "gemma-3-27b-it-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cuda124",
+      "sizeText": "16.5 GB", "tags": ["27B", "需32GB内存"],
+      "desc": "Google Gemma 3 大杯 27B，接近闭源模型水准。",
+      "page": "https://hf-mirror.com/unsloth/gemma-3-27b-it-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/unsloth/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-Q4_K_M.gguf" },
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/unsloth/gemma-3-27b-it-GGUF/resolve/master/gemma-3-27b-it-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "qwen36-27b",
+      "name": "Qwen3.6-27B (MTP)",
+      "file": "Qwen3.6-27B-MTP-Donor-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cuda124",
+      "sizeText": "16 GB", "tags": ["27B", "需16GB+内存"],
+      "desc": "Qwen3.6 代 27B MTP，大内存与独显用户之选。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen3.6-27B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen3.6-27B-GGUF/resolve/master/Qwen3.6-27B-MTP-Donor-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "qwen3-32b",
+      "name": "Qwen3-32B",
+      "file": "Qwen3-32B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cuda124",
+      "sizeText": "19.8 GB", "tags": ["32B", "需32GB内存"],
+      "desc": "Qwen3 稠密旗舰 32B，本地能跑的第一梯队智力。",
+      "page": "https://modelscope.cn/models/Qwen/Qwen3-32B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/Qwen/Qwen3-32B-GGUF/resolve/master/Qwen3-32B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Qwen/Qwen3-32B-GGUF/resolve/main/Qwen3-32B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "r1-distill-32b",
+      "name": "DeepSeek-R1-Distill-Qwen-32B",
+      "file": "DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cuda124",
+      "sizeText": "19.9 GB", "tags": ["32B", "深度推理", "需32GB内存"],
+      "desc": "R1 蒸馏最大杯，本地深度推理天花板之一。",
+      "page": "https://modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-32B-GGUF/resolve/master/DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/unsloth/DeepSeek-R1-Distill-Qwen-32B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf" }
+      ]
+    },
+    {
+      "id": "yi15-34b",
+      "name": "Yi-1.5-34B-Chat",
+      "file": "Yi-1.5-34B-Chat-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cuda124",
+      "sizeText": "20.7 GB", "tags": ["34B", "需32GB内存"],
+      "desc": "零一万物 34B，中英双语大杯模型。",
+      "page": "https://hf-mirror.com/bartowski/Yi-1.5-34B-Chat-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/bartowski/Yi-1.5-34B-Chat-GGUF/resolve/main/Yi-1.5-34B-Chat-Q4_K_M.gguf" }
+      ]
+    },
+
+    {
+      "id": "sd15",
+      "name": "Stable Diffusion v1.5",
+      "file": "stable-diffusion-v1-5-Q4_1.gguf",
+      "type": "sd", "port": 8081, "defaultRuntime": "sdvulkan",
+      "sizeText": "1.0 GB", "tags": ["文生图", "经典", "内置"],
+      "desc": "经典底模，512x512 出图快，低配友好，LoRA 生态最丰富。",
+      "page": "https://hf-mirror.com/second-state/stable-diffusion-v1-5-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/second-state/stable-diffusion-v1-5-GGUF/resolve/main/stable-diffusion-v1-5-Q4_1.gguf" }
+      ]
+    },
+    {
+      "id": "sd14",
+      "name": "Stable Diffusion v1.4",
+      "file": "stable-diffusion-v1-4-Q4_0.gguf",
+      "type": "sd", "port": 8083, "defaultRuntime": "sdvulkan",
+      "sizeText": "1.0 GB", "tags": ["文生图", "经典"],
+      "desc": "初代经典底模，风格复古，体积小巧。",
+      "page": "https://hf-mirror.com/second-state/stable-diffusion-v-1-4-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/second-state/stable-diffusion-v-1-4-GGUF/resolve/main/stable-diffusion-v1-4-Q4_0.gguf" }
+      ]
+    },
+    {
+      "id": "sd21",
+      "name": "Stable Diffusion 2.1 (768)",
+      "file": "v2-1_768-nonema-pruned.safetensors",
+      "type": "sd", "port": 8084, "defaultRuntime": "sdvulkan",
+      "sizeText": "5.2 GB", "tags": ["文生图", "768分辨率"],
+      "desc": "SD2.1 官方权重，原生 768x768，构图更大气。",
+      "page": "https://hf-mirror.com/stabilityai/stable-diffusion-2-1",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-nonema-pruned.safetensors" }
+      ]
+    },
+    {
+      "id": "sdturbo",
+      "name": "SD-Turbo（1步极速）",
+      "file": "sd_turbo.safetensors",
+      "type": "sd", "port": 8085, "defaultRuntime": "sdvulkan",
+      "extraArgs": [],
+      "sizeText": "2.5 GB", "tags": ["文生图", "极速", "1-4步出图"],
+      "desc": "官方蒸馏极速版，1~4 步即可出图，CPU 也能玩。",
+      "page": "https://hf-mirror.com/stabilityai/sd-turbo",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/stabilityai/sd-turbo/resolve/main/sd_turbo.safetensors" }
+      ]
+    },
+    {
+      "id": "dreamshaper8",
+      "name": "DreamShaper 8（艺术风）",
+      "file": "DreamShaper_8_pruned.safetensors",
+      "type": "sd", "port": 8087, "defaultRuntime": "sdvulkan",
+      "sizeText": "2.1 GB", "tags": ["文生图", "艺术", "社区热门"],
+      "desc": "最受欢迎的 SD1.5 微调之一，奇幻/插画/半写实全能。",
+      "page": "https://hf-mirror.com/Lykon/DreamShaper",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors" }
+      ]
+    },
+    {
+      "id": "realisticvision6",
+      "name": "Realistic Vision V6（写实）",
+      "file": "Realistic_Vision_V6.0_NV_B1.safetensors",
+      "type": "sd", "port": 8088, "defaultRuntime": "sdvulkan",
+      "sizeText": "2.1 GB", "tags": ["文生图", "照片级写实"],
+      "desc": "照片级人像/风景写实模型，SD1.5 系写实标杆。",
+      "page": "https://hf-mirror.com/SG161222/Realistic_Vision_V6.0_B1_noVAE",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/SG161222/Realistic_Vision_V6.0_B1_noVAE/resolve/main/Realistic_Vision_V6.0_NV_B1.safetensors" }
+      ]
+    },
+    {
+      "id": "anythingv5",
+      "name": "Anything V5（动漫）",
+      "file": "AnythingV5_v5PrtRE.safetensors",
+      "type": "sd", "port": 8089, "defaultRuntime": "sdvulkan",
+      "sizeText": "2.1 GB", "tags": ["文生图", "动漫二次元"],
+      "desc": "经典二次元动漫风底模，人物精致、上色鲜亮。",
+      "page": "https://civitai.com/models/9409",
+      "sources": [
+        { "label": "OTA 待更新", "url": "OTA:动漫模型请在 Civitai 页面手动下载后放入 models 目录" }
+      ]
+    },
+    {
+      "id": "sdxl10",
+      "name": "SDXL 1.0 (Q4_K)",
+      "file": "sd_xl_base_1.0_0_Q4_K.gguf",
+      "type": "sd", "port": 8082, "defaultRuntime": "sdvulkan",
+      "extraArgs": ["--vae-on-cpu"],
+      "sizeText": "2.6 GB", "tags": ["文生图", "高清1024", "内置"],
+      "desc": "SDXL 高清 1024 出图，已启用 --vae-on-cpu 防 8GB 核显 OOM。",
+      "page": "https://hf-mirror.com/second-state/stable-diffusion-xl-base-1.0-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/second-state/stable-diffusion-xl-base-1.0-GGUF/resolve/main/sd_xl_base_1.0_0_Q4_K.gguf" }
+      ]
+    },
+    {
+      "id": "sdxlturbo",
+      "name": "SDXL-Turbo（高清极速）",
+      "file": "sd_xl_turbo_1.0_fp16.safetensors",
+      "type": "sd", "port": 8086, "defaultRuntime": "sdvulkan",
+      "extraArgs": ["--vae-on-cpu"],
+      "sizeText": "6.9 GB", "tags": ["文生图", "极速", "高清"],
+      "desc": "SDXL 蒸馏极速版，1~4 步出高清图，需较多内存。",
+      "page": "https://hf-mirror.com/stabilityai/sdxl-turbo",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors" }
+      ]
+    },
+    {
+      "id": "sd35-medium",
+      "name": "SD 3.5 Medium",
+      "file": "sd3.5_medium-Q4_0.gguf",
+      "type": "sd", "port": 8090, "defaultRuntime": "sdvulkan",
+      "extraArgs": ["--vae-on-cpu", "--clip_l", "{MODELS}\\clip_l.safetensors", "--clip_g", "{MODELS}\\clip_g.safetensors", "--t5xxl", "{MODELS}\\t5xxl_fp8_e4m3fn.safetensors"],
+      "extraFiles": [
+        { "file": "clip_l.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors" } ] },
+        { "file": "clip_g.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_g.safetensors" } ] },
+        { "file": "t5xxl_fp8_e4m3fn.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/t5xxl_fp8_e4m3fn.safetensors" } ] }
+      ],
+      "sizeText": "1.7+6.9 GB", "tags": ["文生图", "新一代", "含文本编码器"],
+      "desc": "Stability 新一代中杯，文字渲染与构图大幅提升（自动附带 3 个文本编码器）。",
+      "page": "https://hf-mirror.com/second-state/stable-diffusion-3.5-medium-GGUF",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/second-state/stable-diffusion-3.5-medium-GGUF/resolve/main/sd3.5_medium-Q4_0.gguf" }
+      ]
+    },
+    {
+      "id": "sd35-large-turbo",
+      "name": "SD 3.5 Large Turbo",
+      "file": "sd3.5_large_turbo-iq4_nl.gguf",
+      "type": "sd", "port": 8091, "defaultRuntime": "sdvulkan",
+      "extraArgs": ["--vae-on-cpu", "--clip_l", "{MODELS}\\clip_l.safetensors", "--clip_g", "{MODELS}\\clip_g.safetensors", "--t5xxl", "{MODELS}\\t5xxl_fp8_e4m3fn.safetensors"],
+      "extraFiles": [
+        { "file": "clip_l.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors" } ] },
+        { "file": "clip_g.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_g.safetensors" } ] },
+        { "file": "t5xxl_fp8_e4m3fn.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/t5xxl_fp8_e4m3fn.safetensors" } ] }
+      ],
+      "sizeText": "5.1+6.9 GB", "tags": ["文生图", "大杯", "4步出图", "需16GB内存"],
+      "desc": "SD3.5 大杯 Turbo：4 步出旗舰画质（专为 sdcpp 优化的混合量化）。",
+      "page": "https://hf-mirror.com/stduhpf/SD3.5-Large-Turbo-GGUF-mixed-sdcpp",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/stduhpf/SD3.5-Large-Turbo-GGUF-mixed-sdcpp/resolve/main/sd3.5_large_turbo-iq4_nl.gguf" }
+      ]
+    },
+    {
+      "id": "flux1-schnell",
+      "name": "FLUX.1-schnell",
+      "file": "flux1-schnell-Q4_K_S.gguf",
+      "type": "sd", "port": 8092, "defaultRuntime": "sdvulkan",
+      "args": ["--listen-port", "{PORT}", "--vae-on-cpu", "--clip-on-cpu", "--diffusion-model", "{MODEL}", "--vae", "{MODELS}\\ae.safetensors", "--clip_l", "{MODELS}\\clip_l.safetensors", "--t5xxl", "{MODELS}\\t5xxl_fp8_e4m3fn.safetensors"],
+      "extraFiles": [
+        { "file": "ae.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors" } ] },
+        { "file": "clip_l.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors" } ] },
+        { "file": "t5xxl_fp8_e4m3fn.safetensors", "sources": [ { "label": "HF 镜像", "url": "https://hf-mirror.com/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors" } ] }
+      ],
+      "sizeText": "6.8+5.2 GB", "tags": ["文生图", "顶级画质", "4步出图", "需16GB+内存"],
+      "desc": "黑森林 FLUX 极速版：当前开源画质天花板之一，4 步出图（自动附带 VAE 与文本编码器）。",
+      "page": "https://hf-mirror.com/city96/FLUX.1-schnell-gguf",
+      "sources": [
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf" }
+      ]
+    }
+  ]
+}
