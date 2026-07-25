@@ -73,6 +73,15 @@ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-
   `https://ghproxy.net/https://github.com/1fzx23/local-model-launcher/releases/download/v1.0.0/launcher-portable.exe`
 - **GitHub 官方**：[Releases 页面](../../releases)（国内可能较慢）
 
+## 致谢 / Acknowledgements
+
+本应用的本地推理能力完全建立在以下开源项目之上，特此致谢：
+
+- **[llama.cpp](https://github.com/ggml-org/llama.cpp)** —— 本地大语言模型（LLM）推理后端，所有对话模型均由其运行。
+- **[stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp)** —— Stable Diffusion 文生图渲染后端，所有图像生成模型均由其渲染。
+
+应用会自动下载并解压上述后端的预编译二进制（CPU / Vulkan / CUDA / SYCL / HIP / OpenVINO），并以内嵌网页界面呈现；模型权重则来自 Qwen、DeepSeek、Stable Diffusion 等各自的开源发布。
+
 ## 许可证
 
 MIT License — 自由使用、修改、分发。
