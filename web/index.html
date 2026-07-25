@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>local-model-launcher — 本地 AI 模型启动器</title>
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-soft:#0f0f0f;
+    --panel:#111111;
+    --line:#262626;
+    --line2:#1c1c1c;
+    --text:#e8e8e8;
+    --muted:#8a8a8a;
+    --dim:#5a5a5a;
+    --accent:#7c5cff;
+    --accent2:#4f8cff;
+    --green:#2ecc8f;
+    --mono:"Cascadia Mono","JetBrains Mono","SFMono-Regular",ui-monospace,Consolas,"Microsoft YaHei Mono","Microsoft YaHei",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--mono);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* flowing gradient glow */
+  .glow{
+    position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(620px 420px at 18% 8%, rgba(124,92,255,.13), transparent 60%),
+      radial-gradient(540px 420px at 82% 22%, rgba(79,140,255,.10), transparent 60%),
+      radial-gradient(700px 500px at 50% 100%, rgba(124,92,255,.06), transparent 65%);
+    animation:floatGlow 16s ease-in-out infinite alternate;
+  }
+  @keyframes floatGlow{
+    0%{transform:translate3d(-2%,0,0) scale(1)}
+    100%{transform:translate3d(3%,2%,0) scale(1.12)}
+  }
+  a{color:inherit;text-decoration:none}
+  ::selection{background:rgba(124,92,255,.35)}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;
+    background:rgba(10,10,10,.55);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s,background .3s;
+  }
+  .topbar.scrolled{border-color:var(--line2);background:rgba(10,10,10,.85)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em}
+  .logo-mark{
+    width:24px;height:24px;border-radius:6px;
+    background:linear-gradient(135deg,var(--accent2),var(--accent));
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;
+    box-shadow:0 0 14px rgba(124,92,255,.4);
+    animation:pulseMark 4s ease-in-out infinite;
+  }
+  @keyframes pulseMark{50%{box-shadow:0 0 22px rgba(124,92,255,.7)}}
+  .topnav{display:flex;gap:22px;font-size:13px;color:var(--muted)}
+  .topnav a{transition:color .15s;position:relative}
+  .topnav a:hover{color:var(--text)}
+  .topnav a::after{content:"";position:absolute;left:0;bottom:-5px;width:0;height:1px;background:var(--accent);transition:width .2s}
+  .topnav a:hover::after{width:100%}
+  .top-right .gh-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:12.5px;color:var(--text);
+    transition:border-color .15s,background .15s;
+  }
+  .top-right .gh-btn:hover{border-color:var(--accent);background:var(--panel)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    text-align:center;
+    padding:96px 20px 64px;
+    max-width:880px;margin:0 auto;
+  }
+  .pill{
+    display:inline-block;font-size:11.5px;letter-spacing:.18em;color:var(--muted);
+    border:1px solid var(--line);border-radius:30px;padding:5px 14px;margin-bottom:30px;
+    text-transform:uppercase;
+    animation:fadeUp .8s ease both;
+  }
+  .hero h1{
+    font-size:clamp(38px,7vw,76px);
+    font-weight:800;letter-spacing:-.04em;line-height:1.02;
+    background:linear-gradient(180deg,#fff 30%,#9a9a9a);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    animation:fadeUp .8s .05s ease both;
+  }
+  .hero .sub{
+    margin:26px auto 0;max-width:620px;font-size:16px;color:var(--muted);
+    animation:fadeUp .8s .12s ease both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+  .prompt{
+    margin:38px auto 0;max-width:540px;
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:14px 18px;font-size:14px;color:var(--muted);
+    transition:border-color .2s,box-shadow .2s;
+    animation:fadeUp .8s .2s ease both;
+  }
+  .prompt:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
+  .prompt .accent{color:var(--accent);font-weight:700}
+  .prompt .cmd-input{
+    flex:1;background:none;border:none;outline:none;color:var(--text);
+    font-family:var(--mono);font-size:14px;min-width:0;
+  }
+  .prompt .cmd-input::placeholder{color:var(--dim)}
+  .cta{margin-top:34px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .28s ease both}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:13px 24px;border-radius:11px;font-size:14px;font-weight:600;
+    transition:transform .12s,filter .15s,border-color .15s;cursor:pointer;position:relative;overflow:hidden;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;box-shadow:0 6px 26px rgba(124,92,255,.32)}
+  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .btn-primary::after{content:"";position:absolute;top:0;left:-120%;width:55%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+    transform:skewX(-20deg);animation:shimmer 3.2s infinite}
+  @keyframes shimmer{0%{left:-120%}55%{left:150%}100%{left:150%}}
+  .btn-ghost{border:1px solid var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent);background:var(--panel);transform:translateY(-1px)}
+
+  /* ---------- terminal window ---------- */
+  .win-wrap{max-width:860px;margin:72px auto 0;padding:0 20px}
+  .window{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+    transition:transform .25s,box-shadow .25s;
+  }
+  .window:hover{transform:translateY(-3px);box-shadow:0 38px 90px rgba(124,92,255,.12)}
+  .win-bar{
+    display:flex;align-items:center;gap:8px;
+    padding:11px 15px;border-bottom:1px solid var(--line2);background:var(--bg-soft);
+  }
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#ff5f56;animation:dotPulse 3s infinite}.dot.y{background:#ffbd2e;animation:dotPulse 3s .4s infinite}.dot.g{background:#27c93f;animation:dotPulse 3s .8s infinite}
+  @keyframes dotPulse{50%{opacity:.4}}
+  .win-bar .win-title{margin-left:8px;font-size:12px;color:var(--dim)}
+  .win-body{
+    padding:20px 22px;font-size:13px;line-height:1.75;
+    min-height:300px;white-space:pre-wrap;color:#cfcfcf;
+  }
+  .win-body .ts{color:var(--dim)}
+  .win-body .ok{color:var(--green)}
+  .win-body .ac{color:var(--accent2)}
+  .win-body .em{color:var(--accent)}
+  .win-body .mut{color:var(--muted)}
+  .caret{display:inline-block;width:8px;height:15px;background:var(--accent);vertical-align:-2px;animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+  .win-foot{
+    display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line2);
+  }
+  .metric{
+    flex:1;min-width:130px;padding:13px 16px;border-right:1px solid var(--line2);
+    transition:background .2s;
+  }
+  .metric:last-child{border-right:none}
+  .metric:hover{background:var(--bg-soft)}
+  .metric .k{font-size:10.5px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+  .metric .v{font-size:15px;color:var(--text);margin-top:3px;font-weight:600}
+  .metric .v small{font-size:11px;color:var(--muted);font-weight:400}
+
+  /* ---------- section ---------- */
+  .section{max-width:1040px;margin:110px auto 0;padding:0 24px}
+  .sec-head{text-align:center;margin-bottom:46px}
+  .sec-head h2{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .sec-head p{color:var(--muted);margin-top:12px;font-size:14.5px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{
+    background:var(--panel);border:1px solid var(--line2);border-radius:14px;
+    padding:22px;transition:border-color .2s,transform .2s,background .2s;
+  }
+  .card:hover{border-color:rgba(124,92,255,.45);transform:translateY(-4px);background:var(--bg-soft)}
+  .card .ic{
+    width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    background:rgba(124,92,255,.12);margin-bottom:15px;font-size:20px;
+    transition:transform .25s;
+  }
+  .card:hover .ic{transform:scale(1.15) rotate(-8deg)}
+  .card h3{font-size:16.5px;font-weight:700;margin-bottom:8px}
+  .card p{font-size:13px;color:var(--muted);line-height:1.65}
+
+  /* ---------- download ---------- */
+  .dl{
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:40px 34px;text-align:center;
+  }
+  .dl h3{font-size:22px;font-weight:800;margin-bottom:8px}
+  .dl p{color:var(--muted);font-size:14px;margin-bottom:26px}
+  .dl-links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .dl-card{
+    flex:1;min-width:280px;max-width:360px;text-align:left;
+    border:1px solid var(--line);border-radius:13px;padding:18px 20px;
+    transition:border-color .2s,background .2s,transform .2s;
+  }
+  .dl-card:hover{border-color:var(--accent);background:var(--bg-soft);transform:translateY(-3px)}
+  .dl-card .tag{font-size:11px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+  .dl-card .name{font-size:15px;font-weight:700;margin:6px 0 6px}
+  .dl-card .desc{font-size:12.5px;color:var(--muted);word-break:break-all;line-height:1.5}
+  .dl-card a.link{display:inline-block;margin-top:12px;font-size:13px;color:var(--accent2);border-bottom:1px solid transparent}
+  .dl-card a.link:hover{border-color:var(--accent2)}
+
+  /* ---------- footer ---------- */
+  .footer{
+    margin-top:120px;border-top:1px solid var(--line2);
+    padding:34px 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;
+    max-width:1040px;margin-left:auto;margin-right:auto;
+    font-size:12.5px;color:var(--dim);
+  }
+  .footer a{color:var(--muted);transition:color .15s}
+  .footer a:hover{color:var(--text)}
+  .footer .mid{display:flex;gap:20px}
+
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  @media(max-width:640px){
+    .topnav{display:none}
+    .metric{flex-basis:50%}
+    .hero{padding-top:64px}
+  }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<!-- top bar -->
+<div class="topbar" id="topbar">
+  <div class="logo">
+    <div class="logo-mark">&lt;/&gt;</div>
+    <span>local-model-launcher</span>
+  </div>
+  <nav class="topnav">
+    <a href="#features">特性</a>
+    <a href="#download">下载</a>
+    <a href="https://github.com/1fzx23/local-model-launcher">GitHub</a>
+  </nav>
+  <div class="top-right">
+    <a class="gh-btn" href="https://github.com/1fzx23/local-model-launcher">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      Star
+    </a>
+  </div>
+</div>
+
+<!-- hero -->
+<div class="hero">
+  <span class="pill">本地 · 离线 · 开源</span>
+  <h1>local-model-launcher</h1>
+  <p class="sub">一键启动本地 LLM 与 Stable Diffusion 文生图模型的图形界面应用。内嵌终端日志与模型网页界面，支持应用内下载模型与运行环境，模型目录可 OTA 在线更新。</p>
+  <div class="prompt">
+    <span class="accent">❯</span>
+    <input id="cmd" class="cmd-input" placeholder="输入模型名回车试用，如：Qwen2.5-1.5B" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="cta">
+    <a class="btn btn-primary" href="#download">下载 exe</a>
+    <a class="btn btn-ghost" href="https://github.com/1fzx23/local-model-launcher">查看源码</a>
+  </div>
+</div>
+
+<!-- terminal window -->
+<div class="win-wrap reveal">
+  <div class="window">
+    <div class="win-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="win-title">local-model-launcher — 终端</span>
+    </div>
+    <div class="win-body" id="term"></div>
+    <div class="win-foot">
+      <div class="metric"><div class="k">model</div><div class="v">Qwen2.5-1.5B</div></div>
+      <div class="metric"><div class="k">backend</div><div class="v">llama.cpp <small>CPU</small></div></div>
+      <div class="metric"><div class="k">threads</div><div class="v">8</div></div>
+      <div class="metric"><div class="k">port</div><div class="v">8080</div></div>
+      <div class="metric"><div class="k">speed</div><div class="v" id="tps">-- <small>tok/s</small></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- features -->
+<div class="section" id="features">
+  <div class="sec-head reveal">
+    <h2>为什么用启动器</h2>
+    <p>把 llama.cpp / stable-diffusion.cpp 等命令行后端，封装成开箱即用的桌面应用</p>
+  </div>
+  <div class="grid">
+    <div class="card reveal"><div class="ic">⚡</div><h3>一键启动</h3><p>卡片上点「▶ 启动」，服务就绪后右侧自动加载网页界面；「🖥 终端」标签可看实时日志。</p></div>
+    <div class="card reveal"><div class="ic">⬇</div><h3>应用内下载</h3><p>未安装的模型点「⬇ 下载」，可选下载源（魔搭 / HF 镜像），支持断点续传；取消后再点会继续。</p></div>
+    <div class="card reveal"><div class="ic">🔧</div><h3>多后端支持</h3><p>自动下载并解压 llama.cpp / stable-diffusion.cpp（CPU / Vulkan / CUDA / SYCL / HIP / OpenVINO）。</p></div>
+    <div class="card reveal"><div class="ic">🔄</div><h3>OTA 在线更新</h3><p>启动时自动拉取 manifest.json，云端版本更大时自动覆盖内置目录——新增模型无需重装应用。</p></div>
+    <div class="card reveal"><div class="ic">🎨</div><h3>文生图</h3><p>SDXL / SD3.5 / FLUX 已自动附加 —vae-on-cpu 防 8GB 核显 OOM，文本编码器与 VAE 随主模型补齐。</p></div>
+    <div class="card reveal"><div class="ic">🔌</div><h3>OpenAI 兼容 API</h3><p>启动对话模型后暴露 http://127.0.0.1:8080/v1，可被其它 AI 软件直接调用（支持局域网 0.0.0.0）。</p></div>
+  </div>
+</div>
+
+<!-- download -->
+<div class="section" id="download">
+  <div class="sec-head reveal">
+    <h2>下载</h2>
+    <p>预编译 exe 可直接下载，无需自己编译（Electron portable，约 280MB）</p>
+  </div>
+  <div class="dl reveal">
+    <h3>获取 本地AI模型启动器</h3>
+    <p>MIT License — 自由使用、修改、分发</p>
+    <div class="dl-links">
+      <div class="dl-card">
+        <div class="tag">推荐 · 国内直链</div>
+        <div class="name">ghproxy 加速下载</div>
+        <div class="desc">https://ghproxy.net/https://github.com/1fzx23/local-model-launcher/releases/download/v1.0.0/launcher-portable.exe</div>
+        <a class="link" href="https://ghproxy.net/https://github.com/1fzx23/local-model-launcher/releases/download/v1.0.0/launcher-portable.exe">下载 v1.0.0 →</a>
+      </div>
+      <div class="dl-card">
+        <div class="tag">官方 · GitHub</div>
+        <div class="name">GitHub Releases</div>
+        <div class="desc">国内可能较慢，但永远最新稳定</div>
+        <a class="link" href="https://github.com/1fzx23/local-model-launcher/releases">前往 Releases →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- footer -->
+<div class="footer">
+  <div>© 2026 本地 AI 模型启动器 · MIT License</div>
+  <div class="mid">
+    <a href="https://github.com/1fzx23/local-model-launcher">GitHub</a>
+    <a href="#download">下载</a>
+    <a href="#features">特性</a>
+  </div>
+  <div>由 AI 辅助开发</div>
+</div>
+
+<script>
+  // ===== scroll reveal =====
+  const io = new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // ===== topbar on scroll =====
+  const topbar=document.getElementById('topbar');
+  window.addEventListener('scroll',()=>{
+    topbar.classList.toggle('scrolled', window.scrollY>20);
+  });
+
+  // ===== terminal =====
+  const term=document.getElementById('term');
+  const bootLines=[
+    {s:'$ ./本地AI模型启动器.exe', c:''},
+    {s:'› 加载模型清单 manifest.json …', c:'mut'},
+    {s:'› 启动 Qwen2.5-1.5B  [llama.cpp / CPU]', c:'ac'},
+    {s:'  build 2742 (a3b1c2) · backend: CPU · threads: 8', c:''},
+    {s:'  model loaded in 1.42s · ctx: 4096', c:''},
+    {s:'  server listening on http://127.0.0.1:8080', c:'em'},
+    {s:'✓ 就绪 — 模型网页界面已自动加载', c:'ok'},
+    {s:'', c:''},
+  ];
+  function appendLine(s,c){
+    const span=document.createElement('span');
+    if(c) span.className=c;
+    span.innerHTML=(s||'&nbsp;').replace(/ /g,'&nbsp;')+'\n';
+    term.appendChild(span);
+    term.scrollTop=term.scrollHeight;
+  }
+  let bi=0;
+  function boot(){
+    if(bi>=bootLines.length){
+      appendLine('—— 在上方的输入框里回车，亲自试用本地模型 ——','mut');
+      startTps();
+      return;
+    }
+    const l=bootLines[bi++];
+    appendLine(l.s,l.c);
+    setTimeout(boot, l.s?300:160);
+  }
+  // slight delay so hero anim plays first
+  setTimeout(boot,400);
+
+  // ===== fake tokens/s =====
+  function startTps(){
+    const el=document.getElementById('tps');
+    let v=38;
+    setInterval(()=>{
+      v+=(Math.random()*6-3);
+      v=Math.max(22,Math.min(72,v));
+      el.innerHTML=v.toFixed(0)+' <small>tok/s</small>';
+    },900);
+  }
+
+  // ===== interactive prompt =====
+  const cmd=document.getElementById('cmd');
+  const replies=[
+    "已收到指令。该模型运行于本地 llama.cpp 后端（CPU，8 线程），所有推理在离线环境完成，数据不会离开本机。",
+    "启动器已为你加载模型并暴露 OpenAI 兼容 API：http://127.0.0.1:8080/v1，可被任意兼容客户端调用。",
+    "提示：在「运行环境」页可切换 CUDA / Vulkan 后端以加速；在「设置」页可调整 -n 生成长度与 CPU 线程数。",
+    "模型目录支持 OTA 在线更新——启动时会自动从清单地址拉取最新模型列表，新增模型无需重装应用。"
+  ];
+  let ri=0, busy=false;
+
+  function typeInto(text,done){
+    const line=document.createElement('span');
+    term.appendChild(line);
+    let i=0;
+    const t=setInterval(()=>{
+      line.textContent+=text[i++];
+      term.scrollTop=term.scrollHeight;
+      if(i>=text.length){clearInterval(t);if(done)done();}
+    },16);
+  }
+  function send(){
+    const txt=cmd.value.trim();
+    if(!txt||busy) return;
+    busy=true;
+    cmd.value='';
+    appendLine('> '+txt,'ac');
+    appendLine('  模型: ','mut');
+    const r=replies[ri++%replies.length];
+    typeInto(r,()=>{ appendLine(''); term.scrollTop=term.scrollHeight; busy=false; });
+  }
+  cmd.addEventListener('keydown',e=>{ if(e.key==='Enter') send(); });
+</script>
+</body>
+</html>
