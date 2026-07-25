@@ -516,7 +516,7 @@ function createWindow() {
     minHeight: 700,
     backgroundColor: '#0d1117',
     autoHideMenuBar: true,
-    title: 'Local Model Launcher',
+    title: '本地 AI 模型启动器',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
