@@ -24,7 +24,7 @@ function getConfigDir() {
 }
 
 const DEFAULT_CONFIG = {
-  manifestUrl: 'https://raw.githubusercontent.com/YOUR_NAME/model-launcher-manifest/main/manifest.json',
+  manifestUrl: 'https://raw.githubusercontent.com/1fzx23/model-launcher-manifest/main/manifest.json',
   nPredict: 200,
   threads: 0,            // 0 = auto
   apiHost: '127.0.0.1'   // LLM API 监听地址：127.0.0.1 仅本机，0.0.0.0 含局域网
