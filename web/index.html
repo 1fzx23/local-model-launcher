@@ -225,8 +225,8 @@
   .footer a:hover{color:var(--text)}
   .footer .mid{display:flex;gap:20px}
 
-  /* scroll reveal */
-  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+  /* scroll reveal —— 火绒式：下滚渐显 / 上滑渐隐 */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,.61,.36,1),transform .8s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
   .reveal.in{opacity:1;transform:none}
 
   @media(max-width:640px){
@@ -345,16 +345,38 @@
 </div>
 
 <script>
-  // ===== scroll reveal =====
-  const io = new IntersectionObserver((es)=>{
-    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  },{threshold:.12});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-
-  // ===== topbar on scroll =====
+  // ===== topbar =====
   const topbar=document.getElementById('topbar');
-  window.addEventListener('scroll',()=>{
+
+  // ===== 火绒式滚动揭示：下滚渐显 / 上滑渐隐 =====
+  const revealEls=Array.from(document.querySelectorAll('.reveal'));
+  let lastY=window.scrollY, ticking=false;
+
+  function updateReveal(){
+    const y=window.scrollY;
+    const dir = y>=lastY ? 'down':'up';   // 判断滚动方向
+    const vh=window.innerHeight;
+    for(const el of revealEls){
+      const r=el.getBoundingClientRect();
+      if(dir==='down'){
+        // 从下方进入视口 → 逐渐出现
+        if(r.top < vh*0.86 && r.bottom>0) el.classList.add('in');
+      }else{
+        // 向上滑出顶部、或仍在下方未触及 → 逐渐消失
+        if(r.bottom < vh*0.06 || r.top > vh) el.classList.remove('in');
+      }
+    }
+    lastY=y; ticking=false;
+  }
+  function onScroll(){
     topbar.classList.toggle('scrolled', window.scrollY>20);
+    if(!ticking){ ticking=true; requestAnimationFrame(updateReveal); }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  // 初始：首屏已可见的元素直接显示，避免首帧空白
+  revealEls.forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.top < window.innerHeight*0.86 && r.bottom>0) el.classList.add('in');
   });
 
   // ===== terminal =====
