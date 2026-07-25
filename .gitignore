@@ -15,3 +15,6 @@ Thumbs.db
 # python cache
 __pycache__/
 *.pyc
+
+# local github token (never commit)
+.gh_token
