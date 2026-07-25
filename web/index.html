@@ -348,24 +348,21 @@
   // ===== topbar =====
   const topbar=document.getElementById('topbar');
 
-  // ===== 火绒式滚动揭示：下滚渐显 / 上滑渐隐 =====
+  // ===== 滚动揭示：仅下滑淡入（上滑保持，不淡出） =====
   const revealEls=Array.from(document.querySelectorAll('.reveal'));
   let lastY=window.scrollY, ticking=false;
 
   function updateReveal(){
     const y=window.scrollY;
-    const dir = y>=lastY ? 'down':'up';   // 判断滚动方向
+    const dir = y>=lastY ? 'down':'up';
     const vh=window.innerHeight;
-    for(const el of revealEls){
-      const r=el.getBoundingClientRect();
-      if(dir==='down'){
-        // 从下方进入视口 → 逐渐出现
+    if(dir==='down'){   // 只在下滑、且元素从下方进入视口时逐渐出现
+      for(const el of revealEls){
+        const r=el.getBoundingClientRect();
         if(r.top < vh*0.86 && r.bottom>0) el.classList.add('in');
-      }else{
-        // 向上滑出顶部、或仍在下方未触及 → 逐渐消失
-        if(r.bottom < vh*0.06 || r.top > vh) el.classList.remove('in');
       }
     }
+    // 上滑：不做任何处理，已显示内容保持可见
     lastY=y; ticking=false;
   }
   function onScroll(){
