@@ -70,13 +70,27 @@ function loadBuiltinManifest() {
 function fetchRemoteManifest() {
   return new Promise((resolve) => {
     if (!config.manifestUrl || config.manifestUrl.includes('YOUR_NAME')) return resolve({ ok: false, reason: 'manifest URL 未配置' });
-    httpGetFollow(config.manifestUrl, (res) => {
+    // 将 raw.githubusercontent.com 链接转换为 GitHub API 拉取，规避 raw CDN 缓存导致 OTA 长时间拿不到新版
+    let url = config.manifestUrl;
+    let fromApi = false;
+    const m = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/);
+    if (m) {
+      fromApi = true;
+      url = `https://api.github.com/repos/${m[1]}/${m[2]}/contents/${m[4]}?ref=${m[3]}`;
+    }
+    httpGetFollow(url, (res) => {
       if (res.statusCode !== 200) return resolve({ ok: false, reason: 'HTTP ' + res.statusCode });
       let body = '';
       res.on('data', (d) => body += d);
       res.on('end', () => {
         try {
-          const remote = JSON.parse(body);
+          let remote;
+          if (fromApi) {
+            const j = JSON.parse(body);
+            remote = JSON.parse(Buffer.from(j.content, 'base64').toString('utf8'));
+          } else {
+            remote = JSON.parse(body);
+          }
           if ((remote.manifestVersion || 0) > (manifest.manifestVersion || 0)) {
             fs.writeFileSync(path.join(getConfigDir(), 'manifest-ota.json'), JSON.stringify(remote, null, 2));
             manifest = remote;
