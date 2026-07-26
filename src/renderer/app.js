@@ -3,6 +3,7 @@ let state = { config: {}, manifest: { models: [], runtimes: [] }, status: { mode
 let currentView = 'llm';
 let downloads = {};   // id -> {received,total,extraFile}
 let downloading = {}; // id -> true
+let webRetry = 0;       // webview 加载失败后的自动重试计数
 let activeDockPort = null;
 
 const $ = (s) => document.querySelector(s);
@@ -249,6 +250,7 @@ function openDock(port, tab) {
   if (run && run.url) {
     const wv = $('#webview');
     if (wv.getAttribute('src') !== run.url) wv.setAttribute('src', run.url);
+    webRetry = 0; // 进入新的服务预览，重置自动重试计数
     $('#web-url').value = run.url;
     $('#web-placeholder').classList.add('hidden');
   } else {
@@ -473,7 +475,7 @@ $('#btn-save-threads').addEventListener('click', async () => {
 // dock
 $$('.dock-tab').forEach(b => b.addEventListener('click', () => switchDockTab(b.dataset.tab)));
 $('#dock-toggle').addEventListener('click', () => $('#dock').classList.toggle('collapsed'));
-$('#web-reload').addEventListener('click', () => { try { $('#webview').reload(); } catch (_) {} });
+$('#web-reload').addEventListener('click', () => { webRetry = 0; try { $('#webview').reload(); } catch (_) {} });
 $('#web-back').addEventListener('click', () => { try { $('#webview').goBack(); } catch (_) {} });
 $('#web-external').addEventListener('click', () => { const u = $('#web-url').value; if (u) window.api.openExternal(u); });
 
@@ -496,6 +498,7 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
   wv.addEventListener('did-start-loading', () => {
     const src = wv.getAttribute('src') || '';
     if (!/^https?:\/\//i.test(src)) return; // 跳过 about:blank 等非网页导航，避免误显遮罩
+    // 注意：此处不重置 webRetry（由 openDock / 手动刷新负责），否则 reload 会无限重试
     fb.classList.add('hidden');
     loading.classList.remove('hidden');
     startSafety();
@@ -512,8 +515,19 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
     } catch (_) { fb.classList.add('hidden'); }
   });
   wv.addEventListener('dom-ready', () => { hideLoading(); }); // 可靠的完成信号，双保险
-  wv.addEventListener('did-fail-load', () => {
-    showFallback('网页加载失败：服务可能还在启动，或该运行环境不提供网页界面。可点上方「刷新」按钮重试，或复制 API 地址在其它 AI 软件中使用。');
+  wv.addEventListener('did-fail-load', (event) => {
+    // 服务仍在运行 → 多半是模型还在加载 / 首次请求竞态，自动重试几次（每次间隔 3s，最多 6 次）
+    const run = state.running.find(r => r.port === activeDockPort);
+    if (run && run.status === 'running' && webRetry < 6) {
+      webRetry++;
+      fb.classList.add('hidden');
+      loading.classList.remove('hidden');
+      setTimeout(() => { try { wv.reload(); } catch (_) {} }, 3000);
+      return;
+    }
+    webRetry = 0;
+    const detail = (event && event.errorDescription) ? `（${event.errorDescription}）` : '';
+    showFallback('网页加载失败' + detail + '：服务可能还在启动，或该运行环境不提供网页界面。可点上方「刷新」按钮重试，或复制 API 地址在其它 AI 软件中使用。');
   });
 })();
 
