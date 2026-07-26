@@ -1,6 +1,6 @@
 {
-  "manifestVersion": 2,
-  "updatedAt": "2026-07-24",
+  "manifestVersion": 6,
+  "updatedAt": "2026-07-25",
   "note": "OTA catalog (Windows only). Host a newer copy of this file at config.manifestUrl and bump manifestVersion to push updates (fix URLs / add models) without reinstalling the app.",
   "runtimes": [
     {
@@ -96,7 +96,7 @@
       "desc": "文生图后端（Vulkan 通用 GPU 加速），含 sd-server.exe 网页界面。内置默认环境。",
       "page": "https://github.com/leejet/stable-diffusion.cpp/releases",
       "sources": [
-        { "label": "OTA 待更新", "url": "OTA:请在 releases 页面下载 win-vulkan-x64 压缩包解压到 sd-vulkan-x64 目录" }
+        { "label": "GitHub 发布版 (vulkan)", "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-795-87a0177/sd-master-87a0177-bin-win-vulkan-x64.zip" }
       ]
     },
     {
@@ -108,7 +108,7 @@
       "desc": "文生图纯 CPU 后端（AVX2），无显卡也能出图（速度较慢）。",
       "page": "https://github.com/leejet/stable-diffusion.cpp/releases",
       "sources": [
-        { "label": "OTA 待更新", "url": "OTA:请在 releases 页面下载 win-avx2-x64 压缩包解压到 sd-avx2-x64 目录" }
+        { "label": "GitHub 发布版 (cpu)", "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-795-87a0177/sd-master-87a0177-bin-win-cpu-x64.zip" }
       ]
     },
     {
@@ -120,7 +120,7 @@
       "desc": "文生图 NVIDIA CUDA 后端，出图速度最快。",
       "page": "https://github.com/leejet/stable-diffusion.cpp/releases",
       "sources": [
-        { "label": "OTA 待更新", "url": "OTA:请在 releases 页面下载 win-cuda12-x64 压缩包解压到 sd-cuda12-x64 目录" }
+        { "label": "GitHub 发布版 (cuda12)", "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-795-87a0177/sd-master-87a0177-bin-win-cuda12-x64.zip" }
       ]
     }
   ],
@@ -448,9 +448,8 @@
       "sizeText": "2.1 GB", "tags": ["文生图", "动漫二次元"],
       "desc": "经典二次元动漫风底模，人物精致、上色鲜亮。",
       "page": "https://civitai.com/models/9409",
-      "sources": [
-        { "label": "OTA 待更新", "url": "OTA:动漫模型请在 Civitai 页面手动下载后放入 models 目录" }
-      ]
+      "manualDownload": true,
+      "sources": []
     },
     {
       "id": "sdxl10",
@@ -530,6 +529,19 @@
       "page": "https://hf-mirror.com/city96/FLUX.1-schnell-gguf",
       "sources": [
         { "label": "HF 镜像", "url": "https://hf-mirror.com/city96/FLUX.1-schnell-gguf/resolve/main/flux1-schnell-Q4_K_S.gguf" }
+      ]
+    },
+    {
+      "id": "deepseek-r1-distill-1.5b",
+      "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "file": "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+      "type": "llm", "port": 8080, "defaultRuntime": "cpu", "sizeText": "1.1 GB",
+      "tags": ["推理", "思维链", "测试款"],
+      "desc": "DeepSeek-R1 蒸馏小模型，带思维链推理，和内置 Qwen2.5-1.5B 同规模可对比回答质量。",
+      "page": "https://hf-mirror.com/unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF",
+      "sources": [
+        { "label": "魔搭 ModelScope", "url": "https://modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/master/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf" },
+        { "label": "HF 镜像", "url": "https://hf-mirror.com/unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf" }
       ]
     }
   ]
