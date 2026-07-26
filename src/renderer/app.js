@@ -88,7 +88,7 @@ function modelCard(m) {
     const extra = dl && dl.extraFile ? `附属文件: ${dl.extraFile}` : '';
     ops = `
       <div class="progress-wrap grow">
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-bar"><div class="progress-fill" data-prog="${dlId}" style="width:${pct}%"></div></div>
         <div class="progress-text"><span>${extra || (dl ? fmtBytes(dl.received) + ' / ' + fmtBytes(dl.total) : '连接中…')}</span><span>${pct.toFixed(1)}%</span></div>
       </div>
       <button class="op-btn op-cancel" data-act="cancel" data-id="${m.id}">取消</button>`;
@@ -108,12 +108,20 @@ function modelCard(m) {
       <button class="op-btn op-start grow" data-act="start" data-id="${m.id}">${svgIcon('play', '', true)} 启动</button>
       <button class="op-btn op-del" data-act="del" data-id="${m.id}" title="删除模型文件">${svgIcon('trash')}</button>`;
   } else {
-    const srcOptions = (m.sources || []).map((s, i) => `<option value="${i}">${s.label}</option>`).join('');
-    const partial = st.partial ? `（已下载 ${fmtBytes(st.partial)}，可续传）` : (st.missingExtra && st.missingExtra.length ? '（缺附属文件，点击补齐）' : '');
-    ops = `
-      <select data-src="${m.id}" title="选择下载源">${srcOptions}</select>
-      <button class="op-btn op-down grow" data-act="download" data-id="${m.id}">${svgIcon('download')} 下载${partial}</button>
-      ${m.page ? `<button class="op-btn op-link" data-act="page" data-url="${m.page}" title="打开模型主页">${svgIcon('external')}</button>` : ''}`;
+    const hasAuto = (m.sources || []).some(s => s.url && !s.url.startsWith('OTA'));
+    if (!hasAuto) {
+      // no automatic download source → send the user to the homepage
+      ops = m.page
+        ? `<span class="tag">需手动下载</span><button class="op-btn op-link grow" data-act="page" data-url="${m.page}" title="打开主页下载">${svgIcon('external')} 去主页下载</button>`
+        : `<span class="tag">暂不支持自动下载</span>`;
+    } else {
+      const srcOptions = (m.sources || []).map((s, i) => `<option value="${i}">${s.label}</option>`).join('');
+      const partial = st.partial ? `（已下载 ${fmtBytes(st.partial)}，可续传）` : (st.missingExtra && st.missingExtra.length ? '（缺附属文件，点击补齐）' : '');
+      ops = `
+        <select data-src="${m.id}" title="选择下载源">${srcOptions}</select>
+        <button class="op-btn op-down grow" data-act="download" data-id="${m.id}">${svgIcon('download')} 下载${partial}</button>
+        ${m.page ? `<button class="op-btn op-link" data-act="page" data-url="${m.page}" title="打开模型主页">${svgIcon('external')}</button>` : ''}`;
+    }
   }
 
   card.innerHTML = `
@@ -142,7 +150,7 @@ function runtimeCard(r) {
     const pct = dl && dl.total ? Math.min(100, dl.received / dl.total * 100) : 0;
     ops = `
       <div class="progress-wrap grow">
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-bar"><div class="progress-fill" data-prog="${dlId}" style="width:${pct}%"></div></div>
         <div class="progress-text"><span>${dl && dl.extracting ? '解压中…' : (dl ? fmtBytes(dl.received) + ' / ' + fmtBytes(dl.total) : '连接中…')}</span><span>${pct.toFixed(1)}%</span></div>
       </div>
       <button class="op-btn op-cancel" data-act="cancel-rt" data-id="${r.id}">取消</button>`;
@@ -150,9 +158,16 @@ function runtimeCard(r) {
     ops = `<span class="tag hl">${svgIcon('check')} 已安装</span><span class="grow"></span>
       ${r.page ? `<button class="op-btn op-link" data-act="page" data-url="${r.page}">${svgIcon('external')} 官网</button>` : ''}`;
   } else {
-    ops = `
-      <button class="op-btn op-down grow" data-act="download-rt" data-id="${r.id}">${svgIcon('download')} 下载并安装</button>
-      ${r.page ? `<button class="op-btn op-link" data-act="page" data-url="${r.page}">${svgIcon('external')}</button>` : ''}`;
+    const hasAuto = (r.sources || []).some(s => s.url && !s.url.startsWith('OTA'));
+    if (!hasAuto) {
+      ops = r.page
+        ? `<span class="tag">需手动安装</span><button class="op-btn op-link grow" data-act="page" data-url="${r.page}" title="打开主页下载">${svgIcon('external')} 去主页下载</button>`
+        : `<span class="tag">暂不支持自动下载</span>`;
+    } else {
+      ops = `
+        <button class="op-btn op-down grow" data-act="download-rt" data-id="${r.id}">${svgIcon('download')} 下载并安装</button>
+        ${r.page ? `<button class="op-btn op-link" data-act="page" data-url="${r.page}">${svgIcon('external')}</button>` : ''}`;
+    }
   }
 
   card.innerHTML = `
@@ -255,6 +270,27 @@ async function refreshState() {
   renderAll();
 }
 function renderAll() { renderCards(); renderRunning(); }
+
+// Update only the progress bar in place (no full grid rebuild) to avoid
+// destroying the hovered card node and causing flicker during downloads.
+function updateProgress(d) {
+  const fill = document.querySelector('.progress-fill[data-prog="' + d.id + '"]');
+  if (!fill) return; // card not on current view → skip (no full rebuild → no flicker)
+  const wrap = fill.closest('.progress-wrap');
+  const pct = (d.total && d.received != null) ? Math.min(100, d.received / d.total * 100) : 0;
+  fill.style.width = pct + '%';
+  const txt = wrap ? wrap.querySelector('.progress-text') : null;
+  if (txt) {
+    const left = txt.querySelector('span');
+    if (left) {
+      left.textContent = d.extraFile ? ('附属文件: ' + d.extraFile)
+        : d.extracting ? '解压中…'
+        : (d.received != null && d.total ? (fmtBytes(d.received) + ' / ' + fmtBytes(d.total)) : '连接中…');
+    }
+    const right = txt.querySelector('span:last-child');
+    if (right && d.total) right.textContent = pct.toFixed(1) + '%';
+  }
+}
 
 async function doStart(id) {
   const sel = document.querySelector(`select[data-rt="${id}"]`);
@@ -446,10 +482,26 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
   const wv = $('#webview');
   const loading = $('#web-loading');
   const fb = $('#web-fallback');
-  const showFallback = (msg) => { loading.classList.add('hidden'); fb.innerHTML = msg; fb.classList.remove('hidden'); };
-  wv.addEventListener('did-start-loading', () => { loading.classList.remove('hidden'); fb.classList.add('hidden'); });
-  wv.addEventListener('did-stop-loading', async () => {
+  let safetyTimer = null;
+  const hideLoading = () => {
+    if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
     loading.classList.add('hidden');
+  };
+  const showFallback = (msg) => { hideLoading(); fb.innerHTML = msg; fb.classList.remove('hidden'); };
+  const startSafety = () => {
+    if (safetyTimer) clearTimeout(safetyTimer);
+    // 兜底：即便 did-stop-loading 偶发漏触发，遮罩也会在 15s 后强制消失，不会卡死
+    safetyTimer = setTimeout(() => { hideLoading(); }, 15000);
+  };
+  wv.addEventListener('did-start-loading', () => {
+    const src = wv.getAttribute('src') || '';
+    if (!/^https?:\/\//i.test(src)) return; // 跳过 about:blank 等非网页导航，避免误显遮罩
+    fb.classList.add('hidden');
+    loading.classList.remove('hidden');
+    startSafety();
+  });
+  wv.addEventListener('did-stop-loading', async () => {
+    hideLoading();
     try {
       const ct = await wv.executeJavaScript('(document.contentType||"text/html").toLowerCase()');
       if (ct && !ct.includes('text/html')) {
@@ -459,6 +511,7 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
       }
     } catch (_) { fb.classList.add('hidden'); }
   });
+  wv.addEventListener('dom-ready', () => { hideLoading(); }); // 可靠的完成信号，双保险
   wv.addEventListener('did-fail-load', () => {
     showFallback('网页加载失败：服务可能还在启动，或该运行环境不提供网页界面。可点上方「刷新」按钮重试，或复制 API 地址在其它 AI 软件中使用。');
   });
@@ -501,8 +554,8 @@ window.api.onServerStatus((d) => {
 window.api.onDownloadProgress((d) => {
   downloads[d.id] = { ...(downloads[d.id] || {}), ...d };
   if (downloading[d.id]) {
-    // lightweight update: re-render only progress bars
-    renderCards();
+    // update only the progress bar in place (no full grid rebuild → no flicker)
+    updateProgress(d);
   }
 });
 window.api.onManifestUpdated((d) => {
