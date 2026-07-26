@@ -133,6 +133,7 @@ input:focus { border-color: var(--accent); }
   border: 1px solid var(--line); border-radius: var(--radius);
   padding: 15px 16px 13px; display: flex; flex-direction: column; gap: 9px;
   transition: border-color .15s, transform .15s;
+  will-change: transform; /* 提升到独立合成层，消除悬停时的重绘闪烁 */
 }
 .card:hover { border-color: rgba(79,140,255,.4); transform: translateY(-1px); }
 .card.running { border-color: rgba(46,204,143,.5); }

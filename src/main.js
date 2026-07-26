@@ -70,13 +70,27 @@ function loadBuiltinManifest() {
 function fetchRemoteManifest() {
   return new Promise((resolve) => {
     if (!config.manifestUrl || config.manifestUrl.includes('YOUR_NAME')) return resolve({ ok: false, reason: 'manifest URL 未配置' });
-    httpGetFollow(config.manifestUrl, (res) => {
+    // 将 raw.githubusercontent.com 链接转换为 GitHub API 拉取，规避 raw CDN 缓存导致 OTA 长时间拿不到新版
+    let url = config.manifestUrl;
+    let fromApi = false;
+    const m = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/);
+    if (m) {
+      fromApi = true;
+      url = `https://api.github.com/repos/${m[1]}/${m[2]}/contents/${m[4]}?ref=${m[3]}`;
+    }
+    httpGetFollow(url, (res) => {
       if (res.statusCode !== 200) return resolve({ ok: false, reason: 'HTTP ' + res.statusCode });
       let body = '';
       res.on('data', (d) => body += d);
       res.on('end', () => {
         try {
-          const remote = JSON.parse(body);
+          let remote;
+          if (fromApi) {
+            const j = JSON.parse(body);
+            remote = JSON.parse(Buffer.from(j.content, 'base64').toString('utf8'));
+          } else {
+            remote = JSON.parse(body);
+          }
           if ((remote.manifestVersion || 0) > (manifest.manifestVersion || 0)) {
             fs.writeFileSync(path.join(getConfigDir(), 'manifest-ota.json'), JSON.stringify(remote, null, 2));
             manifest = remote;
@@ -209,10 +223,11 @@ function stopServer(port) {
 
 function stopAllServers() { [...runningServers.keys()].forEach(stopServer); }
 
-function waitForServer(port, timeoutMs = 120000) {
+function waitForServer(port, { timeoutMs = 300000, isAlive = () => true } = {}) {
   return new Promise((resolve) => {
     const started = Date.now();
     const tick = () => {
+      if (!isAlive()) return resolve(false); // 进程已退出，立即停止等待（避免“假死”一直转圈）
       const req = http.get({ host: '127.0.0.1', port, path: '/', timeout: 2000 }, (res) => {
         res.resume(); resolve(true);
       });
@@ -254,18 +269,27 @@ async function launchAndTrack({ item, runtime, args, port, type }) {
     }
   });
 
-  // Wait until HTTP is up, then tell renderer to load the web UI
-  waitForServer(port).then((up) => {
-    if (runningServers.get(port) && runningServers.get(port).proc === proc) {
-      if (up) {
-        const apiUrl = type === 'llm' ? `http://${config.apiHost || '127.0.0.1'}:${port}/v1` : null;
-        sendToWin('server-status', {
-          port, status: 'running', itemId: item.id,
-          url: `http://127.0.0.1:${port}/`, name: item.name, type, apiUrl
-        });
-      } else {
-        sendToWin('server-log', { port, line: `\x1b[31m[launcher]\x1b[0m 等待服务超时（模型可能仍在加载）\r\n` });
-      }
+  // Wait until HTTP is up, then tell renderer to load the web UI.
+  // SYCL / GPU 后端首次启动（内核 JIT 编译 + 模型加载）可能耗时数分钟，
+  // 故按运行环境给足超时；进程退出则立即放弃，避免“假死”一直转圈。
+  const timeoutMs = runtime.id === 'sycl' ? 600000
+    : (runtime.gpu ? 300000 : 180000);
+  const isAlive = () => runningServers.get(port) && runningServers.get(port).proc === proc;
+  const hb = setInterval(() => {
+    if (isAlive()) sendToWin('server-log', { port, line: `\x1b[36m[launcher]\x1b[0m 模型仍在加载，请稍候…\r\n` });
+    else clearInterval(hb);
+  }, 30000);
+  waitForServer(port, { timeoutMs, isAlive }).then((up) => {
+    clearInterval(hb);
+    if (!isAlive()) return; // 进程已退出，不再发 running
+    if (up) {
+      const apiUrl = type === 'llm' ? `http://${config.apiHost || '127.0.0.1'}:${port}/v1` : null;
+      sendToWin('server-status', {
+        port, status: 'running', itemId: item.id,
+        url: `http://127.0.0.1:${port}/`, name: item.name, type, apiUrl
+      });
+    } else {
+      sendToWin('server-log', { port, line: `\x1b[31m[launcher]\x1b[0m 等待服务超时（模型可能仍在加载）\r\n` });
     }
   });
 
@@ -430,45 +454,69 @@ function registerIpc() {
       if (!entry) return { ok: false, reason: 'unknown runtime' };
       dest = path.join(config.baseDir, '_downloads', entry.id + '.zip');
     }
-    const source = entry.sources[sourceIndex || 0];
-    if (!source || !source.url || source.url.startsWith('OTA')) {
-      return { ok: false, reason: '该条目的下载地址待 OTA 清单更新，请在设置中刷新在线清单，或在官网页面手动下载' };
+    // only keep real (non-placeholder) sources; "OTA:" prefixed URLs are manual-only
+    const sources = (entry.sources || []).filter(s => s && s.url && !s.url.startsWith('OTA'));
+    if (!sources.length) {
+      return { ok: false, reason: '该条目暂无可用的自动下载地址，请到模型/官网主页手动下载后放入模型目录' };
     }
-    const result = await downloadFile(kind + ':' + id, source.url, dest);
-    // Companion files (VAE / text encoders): download whatever is still missing
-    if (result.ok && kind === 'model' && entry.extraFiles) {
-      for (const ef of entry.extraFiles) {
-        const efDest = path.join(modelsDir(), ef.file);
-        if (fs.existsSync(efDest)) continue;
-        const efSrc = ef.sources && ef.sources[0];
-        if (!efSrc || !efSrc.url || efSrc.url.startsWith('OTA')) continue;
-        sendToWin('download-progress', { id: kind + ':' + id, extraFile: ef.file });
-        const r = await downloadFile(kind + ':' + id, efSrc.url, efDest);
-        if (!r.ok) return { ok: false, reason: '附属文件下载失败(' + ef.file + '): ' + r.reason, status: scanStatus() };
+    // try user-chosen source first, then the rest in order
+    const order = [];
+    const startIdx = (Number.isInteger(sourceIndex) && sources[sourceIndex]) ? sourceIndex : 0;
+    order.push(startIdx);
+    for (let i = 0; i < sources.length; i++) if (i !== startIdx) order.push(i);
+
+    let firstAttempt = true;
+    let lastReason = '未知错误';
+    for (const idx of order) {
+      const source = sources[idx];
+      // switching to a different source: discard any partial file from the previous
+      // (different source => different bytes; resuming would corrupt the file)
+      if (!firstAttempt) {
+        try { fs.unlinkSync(dest + '.part'); } catch (_) {}
       }
-    }
-    if (result.ok && kind === 'runtime') {
-      sendToWin('download-progress', { id: kind + ':' + id, extracting: true });
-      const ex = await extractZip(dest, path.join(config.baseDir, entry.dir));
-      try { fs.unlinkSync(dest); } catch (_) {}
-      if (!ex.ok) return { ok: false, reason: '解压失败: ' + ex.reason };
-      // some zips contain a nested folder; flatten if exe not at root
-      const exeAt = path.join(config.baseDir, entry.dir, entry.exe);
-      if (!fs.existsSync(exeAt)) {
-        const root = path.join(config.baseDir, entry.dir);
-        for (const sub of fs.readdirSync(root)) {
-          const cand = path.join(root, sub, entry.exe);
-          if (fs.existsSync(cand)) {
-            for (const f of fs.readdirSync(path.join(root, sub))) {
-              fs.renameSync(path.join(root, sub, f), path.join(root, f));
-            }
-            fs.rmdirSync(path.join(root, sub));
-            break;
+      firstAttempt = false;
+      sendToWin('download-progress', { id: kind + ':' + id, sourceLabel: source.label || ('源' + (idx + 1)), tryingSource: true });
+      const result = await downloadFile(kind + ':' + id, source.url, dest);
+      if (result.ok) {
+        // Companion files (VAE / text encoders): download whatever is still missing
+        if (kind === 'model' && entry.extraFiles) {
+          for (const ef of entry.extraFiles) {
+            const efDest = path.join(modelsDir(), ef.file);
+            if (fs.existsSync(efDest)) continue;
+            const efSrc = (ef.sources || []).find(s => s && s.url && !s.url.startsWith('OTA'));
+            if (!efSrc) continue;
+            sendToWin('download-progress', { id: kind + ':' + id, extraFile: ef.file });
+            const r = await downloadFile(kind + ':' + id, efSrc.url, efDest);
+            if (!r.ok) return { ok: false, reason: '附属文件下载失败(' + ef.file + '): ' + r.reason, status: scanStatus() };
           }
         }
+        if (kind === 'runtime') {
+          sendToWin('download-progress', { id: kind + ':' + id, extracting: true });
+          const ex = await extractZip(dest, path.join(config.baseDir, entry.dir));
+          try { fs.unlinkSync(dest); } catch (_) {}
+          if (!ex.ok) return { ok: false, reason: '解压失败: ' + ex.reason };
+          // some zips contain a nested folder; flatten if exe not at root
+          const exeAt = path.join(config.baseDir, entry.dir, entry.exe);
+          if (!fs.existsSync(exeAt)) {
+            const root = path.join(config.baseDir, entry.dir);
+            for (const sub of fs.readdirSync(root)) {
+              const cand = path.join(root, sub, entry.exe);
+              if (fs.existsSync(cand)) {
+                for (const f of fs.readdirSync(path.join(root, sub))) {
+                  fs.renameSync(path.join(root, sub, f), path.join(root, f));
+                }
+                fs.rmdirSync(path.join(root, sub));
+                break;
+              }
+            }
+          }
+        }
+        return { ...result, status: scanStatus() };
       }
+      lastReason = result.reason || lastReason;
+      if (result.reason === 'cancelled') return { ok: false, reason: 'cancelled', resumable: true };
     }
-    return { ...result, status: scanStatus() };
+    return { ok: false, reason: '所有下载源均失败（最后错误: ' + lastReason + '）' };
   });
 
   ipcMain.handle('cancel-download', (e, { id }) => {
