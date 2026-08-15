@@ -3,6 +3,7 @@ let state = { config: {}, manifest: { models: [], runtimes: [] }, status: { mode
 let currentView = 'llm';
 let downloads = {};   // id -> {received,total,extraFile}
 let downloading = {}; // id -> true
+let webRetry = 0;       // webview 加载失败后的自动重试计数
 let activeDockPort = null;
 
 const $ = (s) => document.querySelector(s);
@@ -28,6 +29,7 @@ const ICONS = {
   layers:   '<polyline points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
   stop:     '<rect x="6" y="6" width="12" height="12" rx="2"/>',
   play:     '<polygon points="6 4 20 12 6 20 6 4"/>',
+  rocket:   '<path d="M12 2.6C14.1 3.9 15.3 6.4 15.3 9.4c0 2.2-.7 4.1-1.6 5.6H10.3c-.9-1.5-1.6-3.4-1.6-5.6 0-3 1.2-5.5 3.3-6.8z"/><circle cx="12" cy="9" r="1.7"/><path d="M8.9 12.6 5.9 16.3h3.5z"/><path d="M15.1 12.6 18.1 16.3h-3.5z"/><path d="M10.6 15.3c-.3 1.1.3 2.1 1.4 3.1 1.1-1 1.7-2 1.4-3.1"/>',
   copy:     '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
 };
 function svgIcon(name, cls, filled) {
@@ -54,6 +56,9 @@ function toast(msg) {
 function renderCards() {
   const wrap = $('#cards');
   const q = ($('#search').value || '').toLowerCase();
+  // 记录当前已存在的卡片 id，用于「仅首次出现/新增时播放入场动画」，
+  // 状态轮询整体重建 DOM 时不重复闪烁（apple-design：反馈连续、不扰民）
+  const existing = new Set([...wrap.children].map(c => (c.dataset && c.dataset.mid) || '').filter(Boolean));
   wrap.innerHTML = '';
 
   if (currentView === 'runtime') {
@@ -61,13 +66,17 @@ function renderCards() {
       if (q && !(r.name + r.desc).toLowerCase().includes(q)) continue;
       wrap.appendChild(runtimeCard(r));
     }
-    return;
+  } else {
+    const list = state.manifest.models.filter(m => m.type === (currentView === 'sd' ? 'sd' : 'llm'));
+    for (const m of list) {
+      if (q && !(m.name + m.desc + (m.tags || []).join('')).toLowerCase().includes(q)) continue;
+      wrap.appendChild(modelCard(m));
+    }
   }
-  const list = state.manifest.models.filter(m => m.type === (currentView === 'sd' ? 'sd' : 'llm'));
-  for (const m of list) {
-    if (q && !(m.name + m.desc + (m.tags || []).join('')).toLowerCase().includes(q)) continue;
-    wrap.appendChild(modelCard(m));
-  }
+  // 给本轮新增的卡片挂上入场动画 class（已存在的卡片不挂，避免轮询时重闪）
+  wrap.querySelectorAll('.card').forEach(c => {
+    if (!existing.has(c.dataset.mid)) c.classList.add('card-enter');
+  });
 }
 
 function modelCard(m) {
@@ -78,6 +87,7 @@ function modelCard(m) {
 
   const card = document.createElement('div');
   card.className = 'card' + (m.type === 'sd' ? ' sd' : '') + (running ? ' running' : '');
+  card.dataset.mid = m.id;
 
   const tags = (m.tags || []).map(t =>
     `<span class="tag${/内置|推荐/.test(t) ? ' hl' : ''}">${t}</span>`).join('');
@@ -105,7 +115,7 @@ function modelCard(m) {
       }).join('');
     ops = `
       <select data-rt="${m.id}" title="选择运行环境">${rtOptions}</select>
-      <button class="op-btn op-start grow" data-act="start" data-id="${m.id}">${svgIcon('play', '', true)} 启动</button>
+      <button class="op-btn op-start grow" data-act="start" data-id="${m.id}">${svgIcon('rocket')} 启动</button>
       <button class="op-btn op-del" data-act="del" data-id="${m.id}" title="删除模型文件">${svgIcon('trash')}</button>`;
   } else {
     const hasAuto = (m.sources || []).some(s => s.url && !s.url.startsWith('OTA'));
@@ -144,6 +154,7 @@ function runtimeCard(r) {
   const dl = downloads[dlId];
   const card = document.createElement('div');
   card.className = 'card';
+  card.dataset.mid = r.id;
 
   let ops = '';
   if (downloading[dlId]) {
@@ -249,6 +260,7 @@ function openDock(port, tab) {
   if (run && run.url) {
     const wv = $('#webview');
     if (wv.getAttribute('src') !== run.url) wv.setAttribute('src', run.url);
+    webRetry = 0; // 进入新的服务预览，重置自动重试计数
     $('#web-url').value = run.url;
     $('#web-placeholder').classList.add('hidden');
   } else {
@@ -257,10 +269,25 @@ function openDock(port, tab) {
   }
   switchDockTab(tab || 'term');
 }
+function positionNavInd() {
+  const ind = $('#nav-ind');
+  const active = $('.nav-btn.active');
+  if (!ind || !active) return;
+  ind.style.height = active.offsetHeight + 'px';
+  ind.style.transform = 'translateY(' + active.offsetTop + 'px)';
+}
+function positionDockTab() {
+  const ind = $('#dock-tab-ind');
+  const active = $('.dock-tab.active');
+  if (!ind || !active) return;
+  ind.style.width = active.offsetWidth + 'px';
+  ind.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+}
 function switchDockTab(tab) {
   $$('.dock-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   $('#pane-term').classList.toggle('hidden', tab !== 'term');
   $('#pane-web').classList.toggle('hidden', tab !== 'web');
+  positionDockTab();
 }
 
 // ------------------------------------------------------------------ actions
@@ -336,6 +363,7 @@ function renderDiscover(files) {
   for (const f of files) {
     const card = document.createElement('div');
     card.className = 'card' + (f.type === 'sd' ? ' sd' : '');
+    card.dataset.mid = 'local:' + f.file;
     const rtOptions = state.manifest.runtimes
       .filter(r => (f.type === 'sd') === r.exe.startsWith('sd'))
       .map(r => {
@@ -349,7 +377,7 @@ function renderDiscover(files) {
     } else {
       ops = `
         <select data-crt="${f.file}" title="选择运行环境">${rtOptions}</select>
-        <button class="op-btn op-start grow" data-act="start-custom" data-file="${f.file}" data-type="${f.type}">${svgIcon('play', '', true)} 启动</button>`;
+        <button class="op-btn op-start grow" data-act="start-custom" data-file="${f.file}" data-type="${f.type}">${svgIcon('rocket')} 启动</button>`;
     }
     card.innerHTML = `
       <div class="card-top">
@@ -434,6 +462,7 @@ $$('.nav-btn').forEach(b => b.addEventListener('click', () => {
     $('#lib-title').textContent = { llm: '对话模型', sd: '文生图模型', runtime: '运行环境' }[currentView];
     renderCards();
   }
+  positionNavInd();
 }));
 
 $('#search').addEventListener('input', renderCards);
@@ -473,7 +502,7 @@ $('#btn-save-threads').addEventListener('click', async () => {
 // dock
 $$('.dock-tab').forEach(b => b.addEventListener('click', () => switchDockTab(b.dataset.tab)));
 $('#dock-toggle').addEventListener('click', () => $('#dock').classList.toggle('collapsed'));
-$('#web-reload').addEventListener('click', () => { try { $('#webview').reload(); } catch (_) {} });
+$('#web-reload').addEventListener('click', () => { webRetry = 0; try { $('#webview').reload(); } catch (_) {} });
 $('#web-back').addEventListener('click', () => { try { $('#webview').goBack(); } catch (_) {} });
 $('#web-external').addEventListener('click', () => { const u = $('#web-url').value; if (u) window.api.openExternal(u); });
 
@@ -496,6 +525,7 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
   wv.addEventListener('did-start-loading', () => {
     const src = wv.getAttribute('src') || '';
     if (!/^https?:\/\//i.test(src)) return; // 跳过 about:blank 等非网页导航，避免误显遮罩
+    // 注意：此处不重置 webRetry（由 openDock / 手动刷新负责），否则 reload 会无限重试
     fb.classList.add('hidden');
     loading.classList.remove('hidden');
     startSafety();
@@ -512,8 +542,19 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
     } catch (_) { fb.classList.add('hidden'); }
   });
   wv.addEventListener('dom-ready', () => { hideLoading(); }); // 可靠的完成信号，双保险
-  wv.addEventListener('did-fail-load', () => {
-    showFallback('网页加载失败：服务可能还在启动，或该运行环境不提供网页界面。可点上方「刷新」按钮重试，或复制 API 地址在其它 AI 软件中使用。');
+  wv.addEventListener('did-fail-load', (event) => {
+    // 服务仍在运行 → 多半是模型还在加载 / 首次请求竞态，自动重试几次（每次间隔 3s，最多 6 次）
+    const run = state.running.find(r => r.port === activeDockPort);
+    if (run && run.status === 'running' && webRetry < 6) {
+      webRetry++;
+      fb.classList.add('hidden');
+      loading.classList.remove('hidden');
+      setTimeout(() => { try { wv.reload(); } catch (_) {} }, 3000);
+      return;
+    }
+    webRetry = 0;
+    const detail = (event && event.errorDescription) ? `（${event.errorDescription}）` : '';
+    showFallback('网页加载失败' + detail + '：服务可能还在启动，或该运行环境不提供网页界面。可点上方「刷新」按钮重试，或复制 API 地址在其它 AI 软件中使用。');
   });
 })();
 
@@ -522,14 +563,53 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
   const dock = $('#dock');
   const rz = $('#dock-resizer');
   let dragging = false;
-  rz.addEventListener('mousedown', () => { dragging = true; document.body.style.cursor = 'col-resize'; });
+  rz.addEventListener('mousedown', () => {
+    dragging = true;
+    document.body.style.cursor = 'col-resize';
+    dock.style.transition = 'none';   // 拖拽时关闭过渡，避免跟随指针迟钝
+  });
   window.addEventListener('mousemove', (e) => {
     if (!dragging) return;
     const w = window.innerWidth - e.clientX;
     dock.style.width = Math.max(380, Math.min(window.innerWidth * .72, w)) + 'px';
   });
-  window.addEventListener('mouseup', () => { dragging = false; document.body.style.cursor = ''; });
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    dock.style.transition = '';       // 恢复过渡，开合动画重新生效
+  });
 })();
+
+// 窗口尺寸变化时，导航/dock滑动药丸的位移需重新测量对齐
+window.addEventListener('resize', () => {
+  requestAnimationFrame(positionNavInd);
+  requestAnimationFrame(positionDockTab);
+});
+
+// 深色模式切换（按钮图标随状态切换：浅色显示月亮→点它变深；深色显示太阳→点它变浅）
+const themeBtn = document.getElementById('btn-theme-toggle');
+const ICON_MOON = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const ICON_SUN  = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>';
+function setThemeIcon(dark) { if (themeBtn) themeBtn.innerHTML = dark ? ICON_SUN : ICON_MOON; }
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  setThemeIcon(dark);
+  // 切换后重新定位药丸（字体/布局可能微变）
+  requestAnimationFrame(positionNavInd);
+  requestAnimationFrame(positionDockTab);
+}
+if (themeBtn) themeBtn.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(!isDark);
+  // 持久化偏好
+  try { localStorage.setItem('theme', !isDark ? 'dark' : 'light'); } catch(_) {}
+});
+// 启动时读取持久化偏好
+try {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') applyTheme(true); else setThemeIcon(false);
+} catch(_) { setThemeIcon(false); }
 
 // ------------------------------------------------------------------ ipc listeners
 window.api.onServerLog((d) => appendTerm(d.port, d.line));
@@ -563,5 +643,11 @@ window.api.onManifestUpdated((d) => {
   refreshState();
 });
 
-// init
+// init：导航/dock滑动药丸初始定位 + 字体加载后二次校准（Inter 加载会改变按钮高度）
+positionNavInd();
+positionDockTab();
+window.addEventListener('load', () => { positionNavInd(); positionDockTab(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { positionNavInd(); positionDockTab(); });
+requestAnimationFrame(() => { positionNavInd(); positionDockTab(); });
+
 refreshState();

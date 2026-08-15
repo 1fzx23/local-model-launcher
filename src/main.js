@@ -107,20 +107,23 @@ function fetchRemoteManifest() {
 // ---------------------------------------------------------------------------
 // HTTP helper with redirect support
 // ---------------------------------------------------------------------------
-function httpGetFollow(url, onResponse, onError, headers = {}, depth = 0) {
+function httpGetFollow(url, onResponse, onError, headers = {}, depth = 0, onRequest = null) {
   if (depth > 8) { onError(new Error('too many redirects')); return null; }
   const mod = url.startsWith('https') ? https : http;
   const req = mod.get(url, { headers: { 'User-Agent': 'LocalModelLauncher/1.0', ...headers } }, (res) => {
     if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
-      res.resume();
+      res.resume(); // drain the redirect response body so the socket can be reused
       const next = new URL(res.headers.location, url).toString();
-      httpGetFollow(next, onResponse, onError, headers, depth + 1);
+      httpGetFollow(next, onResponse, onError, headers, depth + 1, onRequest);
     } else {
       onResponse(res);
     }
   });
   req.on('error', onError);
   req.setTimeout(30000, () => { req.destroy(new Error('timeout')); });
+  // keep the caller's `state.req` pointed at the *current* (possibly redirected) request,
+  // otherwise cancelling would destroy an already-finished redirect request and do nothing.
+  if (onRequest) onRequest(req);
   return req;
 }
 
@@ -142,19 +145,32 @@ async function downloadFile(id, url, destPath) {
     const state = { cancelled: false, req: null };
     activeDownloads.set(id, state);
 
+    // Guard so we only ever resolve once, and so a cancel that arrives as a
+    // destroy() error can't be misreported as a generic failure (which would
+    // make download-item fall through to the NEXT source and keep downloading).
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      activeDownloads.delete(id);
+      resolve(result);
+    };
+    const onErr = (err) => {
+      if (state.cancelled) return finish({ ok: false, reason: 'cancelled', resumable: true });
+      finish({ ok: false, reason: err.message, resumable: true });
+    };
+
     const headers = startByte > 0 ? { Range: `bytes=${startByte}-` } : {};
     state.req = httpGetFollow(url, (res) => {
-      if (res.statusCode === 416) { // range not satisfiable -> restart
+      if (res.statusCode === 416) { // range not satisfiable -> restart from scratch
         try { fs.unlinkSync(partPath); } catch (_) {}
         startByte = 0;
-        activeDownloads.delete(id);
-        return resolve(downloadFile(id, url, destPath));
+        return finish(downloadFile(id, url, destPath));
       }
       if (res.statusCode !== 200 && res.statusCode !== 206) {
-        activeDownloads.delete(id);
-        return resolve({ ok: false, reason: 'HTTP ' + res.statusCode });
+        return finish({ ok: false, reason: 'HTTP ' + res.statusCode });
       }
-      if (res.statusCode === 200) startByte = 0; // server ignored range
+      if (res.statusCode === 200) startByte = 0; // server ignored range -> full download
 
       const total = startByte + (parseInt(res.headers['content-length'] || '0', 10) || 0);
       let received = startByte;
@@ -162,8 +178,10 @@ async function downloadFile(id, url, destPath) {
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       const ws = fs.createWriteStream(partPath, { flags: startByte > 0 ? 'a' : 'w' });
 
+      const abort = () => { try { ws.destroy(); } catch (_) {} try { res.destroy(); } catch (_) {} };
+
       res.on('data', (chunk) => {
-        if (state.cancelled) { res.destroy(); ws.close(); return; }
+        if (state.cancelled) { abort(); return finish({ ok: false, reason: 'cancelled', resumable: true }); }
         received += chunk.length;
         ws.write(chunk);
         const now = Date.now();
@@ -174,24 +192,16 @@ async function downloadFile(id, url, destPath) {
       });
       res.on('end', () => {
         ws.end(() => {
-          activeDownloads.delete(id);
-          if (state.cancelled) return resolve({ ok: false, reason: 'cancelled', resumable: true });
+          if (state.cancelled) return finish({ ok: false, reason: 'cancelled', resumable: true });
           try {
             fs.renameSync(partPath, destPath);
             sendToWin('download-progress', { id, received, total, done: true });
-            resolve({ ok: true });
-          } catch (e) { resolve({ ok: false, reason: e.message }); }
+            finish({ ok: true });
+          } catch (e) { finish({ ok: false, reason: e.message }); }
         });
       });
-      res.on('error', (e) => {
-        ws.close();
-        activeDownloads.delete(id);
-        resolve({ ok: false, reason: e.message, resumable: true });
-      });
-    }, (err) => {
-      activeDownloads.delete(id);
-      resolve({ ok: false, reason: err.message, resumable: true });
-    }, headers);
+      res.on('error', onErr);
+    }, onErr, headers, 0, (req) => { state.req = req; });
   });
 }
 

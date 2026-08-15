@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>界面预览 · 苹果风高端主题</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style id="inlined-app-css">
 /* =============================================================================
    Local Model Launcher — Apple-style Light Theme (deep revision)
    设计语言：Apple Human Interface（浅色 / 毛玻璃分层 / 克制留白 / 柔和阴影）
@@ -84,7 +93,7 @@ html, body { height: 100%; }
 /* ===================== 基础排版 ===================== */
 /* 用户壁纸：macOS Tahoe 4K（彩色光晕 + 流动曲线，模糊后呈现高级磨砂质感）
    注意：CSS 的 url() 相对“本样式表文件”所在目录解析，而非 HTML。
-   style.css 位于 src/renderer/，故需上两级到项目根再进 assets/ → ../../assets/wallpaper.jpg */
+   style.css 位于 src/renderer/，故需上两级到项目根再进 assets/ → assets/wallpaper.jpg */
 body {
   font-family: var(--font);
   font-size: 14px; line-height: 1.5;
@@ -101,7 +110,7 @@ body {
 /* 壁纸层：去色处理，保证整体纯黑白色调（磨砂玻璃叠在其上） */
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1;
-  background-image: url('../../assets/wallpaper.jpg');
+  background-image: url('assets/wallpaper.jpg');
   background-size: cover; background-position: center; background-repeat: no-repeat;
   filter: contrast(1.03) saturate(1.04) brightness(1.02);
 }
@@ -163,7 +172,7 @@ body::before {
 /* 深色模式：切换为暗色壁纸（同样去色） */
 :root[data-theme="dark"] body { background-color: #000; }
 :root[data-theme="dark"] body::before {
-  background-image: url('../../assets/wallpaper-dark.jpg');
+  background-image: url('assets/wallpaper-dark.jpg');
   filter: contrast(1.06) saturate(1.08) brightness(.82);
 }
 /* 深色下 .brand-icon 直接继承基础规则的 --ink/--on-ink，自动反色为浅底深三角 */
@@ -737,3 +746,230 @@ webview { flex: 1; background: #fff; }
   #nav-ind, #dock-tab-ind { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255,255,255,.94); }
   .card, .ghost-btn, .lib-actions input, .run-item, .set-group { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+</style>
+<style>
+  /* 仅预览页用的演示态，不影响真实 app */
+  .demo-flag{position:fixed;top:12px;right:14px;z-index:9999;font-size:11px;font-weight:600;
+    color:var(--text-3);background:var(--surface);border:1px solid var(--line);border-radius:980px;
+    padding:5px 12px;box-shadow:var(--shadow-sm);}
+</style>
+</head>
+<body>
+<div class="demo-flag">预览 · 非真实运行</div>
+<div id="app">
+  <!-- ============ Sidebar ============ -->
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 6.5 L8 17.5 L18 12 Z"/></svg></div>
+      <div>
+        <div class="brand-name">Model Launcher</div>
+        <div class="brand-sub">本地大模型 · 一键启动</div>
+      </div>
+    </div>
+
+    <nav id="nav">
+      <div id="nav-ind"></div>
+      <button class="nav-btn active" data-view="llm"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>对话模型</button>
+      <button class="nav-btn" data-view="sd"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>文生图</button>
+      <button class="nav-btn" data-view="runtime"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>运行环境</button>
+      <button class="nav-btn" data-view="discover"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>本地发现</button>
+      <button class="nav-btn" data-view="settings"><span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>设置</button>
+    </nav>
+
+    <div id="running-panel">
+      <div class="rp-title">运行中服务</div>
+      <div id="running-list">
+        <div class="run-item">
+          <div class="ri-top"><span class="dot green"></span><span class="ri-name" title="Qwen3-8B">Qwen3-8B</span><span class="ri-port">:8080</span></div>
+          <div class="ri-api">
+            <span class="ri-api-label">API</span>
+            <code class="ri-api-url">http://127.0.0.1:8080/v1</code>
+            <button class="api-copy" title="复制地址"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+          <div class="ri-ops"><button>终端</button><button>网页</button><button class="stop">停止</button></div>
+        </div>
+        <div class="run-item">
+          <div class="ri-top"><span class="dot amber"></span><span class="ri-name" title="SD35">SD35</span><span class="ri-port">:7861</span></div>
+          <div class="ri-ops"><button>终端</button><button>网页</button><button class="stop">停止</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-foot">
+      <button class="ghost-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.17a2 2 0 0 1 1.41.59l1.83 1.83A2 2 0 0 0 12.83 6H18"/></svg> 打开模型目录</button>
+      <div class="ota-badge"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64L3 16"/><path d="M3 21v-5h5"/></svg> 模型清单已更新</div>
+    </div>
+  </aside>
+
+  <!-- ============ Main ============ -->
+  <main id="main">
+    <section id="view-library">
+      <header class="lib-head">
+        <h1 id="lib-title">对话模型</h1>
+        <div class="lib-actions">
+          <input id="search" type="text" placeholder="搜索模型…">
+          <button class="ghost-btn" id="btn-theme-toggle" title="切换深色/浅色模式"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+          <button class="ghost-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64L3 16"/><path d="M3 21v-5h5"/></svg> 检查清单更新</button>
+        </div>
+      </header>
+      <div id="cards">
+
+        <!-- 已安装 + 运行中 -->
+        <div class="card running">
+          <div class="card-top">
+            <div class="card-emoji"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><div class="card-title">Qwen3-8B</div><div class="card-size">4.96 GB · 已安装 · 端口 8080</div></div>
+          </div>
+          <div class="card-desc">通义千问第三代 80 亿参数对话模型，中英文均衡，支持工具调用与长上下文。</div>
+          <div class="card-tags"><span class="tag hl">内置</span><span class="tag">推荐</span><span class="tag">中文</span><span class="tag">工具调用</span></div>
+          <div class="card-ops">
+            <button class="op-btn op-stop grow"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> 停止服务</button>
+            <button class="op-btn op-link" title="查看终端/网页"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></button>
+          </div>
+        </div>
+
+        <!-- 已安装 + 可启动 -->
+        <div class="card">
+          <div class="card-top">
+            <div class="card-emoji"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><div class="card-title">DeepSeek-R1-Distill-7B</div><div class="card-size">4.15 GB · 已安装</div></div>
+          </div>
+          <div class="card-desc">DeepSeek R1 蒸馏版，强化推理能力，适合数学与代码类任务。</div>
+          <div class="card-tags"><span class="tag">推理</span><span class="tag">代码</span><span class="tag">英文</span></div>
+          <div class="card-ops">
+            <select title="选择运行环境"><option>llama.cpp (CPU)</option><option>llama.cpp (GPU)</option></select>
+            <button class="op-btn op-start grow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.6C14.1 3.9 15.3 6.4 15.3 9.4c0 2.2-.7 4.1-1.6 5.6H10.3c-.9-1.5-1.6-3.4-1.6-5.6 0-3 1.2-5.5 3.3-6.8z"/><circle cx="12" cy="9" r="1.7"/><path d="M8.9 12.6 5.9 16.3h3.5z"/><path d="M15.1 12.6 18.1 16.3h-3.5z"/><path d="M10.6 15.3c-.3 1.1.3 2.1 1.4 3.1 1.1-1 1.7-2 1.4-3.1"/></svg> 启动</button>
+            <button class="op-btn op-del" title="删除模型文件"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+          </div>
+        </div>
+
+        <!-- 未安装 + 可下载 -->
+        <div class="card">
+          <div class="card-top">
+            <div class="card-emoji"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><div class="card-title">Phi-4-mini</div><div class="card-size">2.54 GB</div></div>
+          </div>
+          <div class="card-desc">微软小参数高密度模型，轻量快速，适合低显存设备本地推理。</div>
+          <div class="card-tags"><span class="tag">轻量</span><span class="tag">低显存</span></div>
+          <div class="card-ops">
+            <select title="选择下载源"><option>官方 HuggingFace</option><option>GitHub 镜像</option></select>
+            <button class="op-btn op-down grow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 下载</button>
+            <button class="op-btn op-link" title="打开模型主页"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- 文生图 -->
+        <div class="card sd">
+          <div class="card-top">
+            <div class="card-emoji"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+            <div><div class="card-title">Stable Diffusion 3.5</div><div class="card-size">6.18 GB · 已安装</div></div>
+          </div>
+          <div class="card-desc">文本生成图像模型，支持中英文提示词，出图质量高、风格多样。</div>
+          <div class="card-tags"><span class="tag hl">内置</span><span class="tag">文生图</span></div>
+          <div class="card-ops">
+            <select title="选择运行环境"><option>SD.Next (GPU)</option></select>
+            <button class="op-btn op-start grow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.6C14.1 3.9 15.3 6.4 15.3 9.4c0 2.2-.7 4.1-1.6 5.6H10.3c-.9-1.5-1.6-3.4-1.6-5.6 0-3 1.2-5.5 3.3-6.8z"/><circle cx="12" cy="9" r="1.7"/><path d="M8.9 12.6 5.9 16.3h3.5z"/><path d="M15.1 12.6 18.1 16.3h-3.5z"/><path d="M10.6 15.3c-.3 1.1.3 2.1 1.4 3.1 1.1-1 1.7-2 1.4-3.1"/></svg> 启动</button>
+            <button class="op-btn op-del" title="删除模型文件"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Dock ============ -->
+  <div id="dock">
+    <div id="dock-resizer"></div>
+    <div id="dock-head">
+      <div id="dock-tabs">
+        <div id="dock-tab-ind"></div>
+        <button class="dock-tab active" data-tab="term"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> 终端</button>
+        <button class="dock-tab" data-tab="web"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> 模型网页</button>
+      </div>
+      <div id="dock-meta"><span id="dock-status" class="dot green"></span><span id="dock-name">Qwen3-8B（端口 8080）</span></div>
+      <button id="dock-toggle" title="展开/收起"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
+    </div>
+    <div id="dock-body">
+      <div id="pane-term"><div id="terminal"><span class="t-cyan">[launcher]</span> 服务就绪，监听 http://127.0.0.1:8080
+<span class="t-yellow">[load]</span> 加载模型 qwen3-8b.Q4_K_M.gguf … 52%
+<span class="t-cyan">[ok]</span> 上下文窗口 32768，KV cache 已分配
+<span class="t-yellow">[warn]</span> 检测到低显存，已自动回退 CPU 卸载
+<span class="t-cyan">[http]</span> POST /v1/chat/completions 200 (1.2s)
+</div></div>
+      <div id="pane-web" class="hidden">
+        <div id="web-bar">
+          <button id="web-back" title="后退"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          <button id="web-reload" title="刷新"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64L3 16"/><path d="M3 21v-5h5"/></svg></button>
+          <input id="web-url" readonly value="http://127.0.0.1:7860">
+          <button id="web-external" title="在浏览器中打开"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button>
+        </div>
+        <webview id="webview" src="about:blank" allowpopups></webview>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 仅预览页：演示滑动药丸 / 导航选中 / 卡片入场 / 深色切换（真实 app 由 app.js 驱动） -->
+<script>
+(function () {
+  // 导航滑动药丸（演示）：跟随当前选中的 .nav-btn
+  const navInd = document.getElementById('nav-ind');
+  const navs = [...document.querySelectorAll('.nav-btn')];
+  function moveNavInd() {
+    const a = document.querySelector('.nav-btn.active');
+    if (navInd && a) {
+      navInd.style.height = a.offsetHeight + 'px';
+      navInd.style.transform = 'translateY(' + a.offsetTop + 'px)';
+    }
+  }
+  navs.forEach(n => n.addEventListener('click', () => {
+    navs.forEach(x => x.classList.toggle('active', x === n));
+    moveNavInd();
+  }));
+
+  // Dock 标签滑动药丸（演示）：水平滑动到激活标签
+  const dockTabInd = document.getElementById('dock-tab-ind');
+  const tabs = [...document.querySelectorAll('.dock-tab')];
+  function moveDockTabInd() {
+    const a = document.querySelector('.dock-tab.active');
+    if (dockTabInd && a) {
+      dockTabInd.style.width = a.offsetWidth + 'px';
+      dockTabInd.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+    }
+  }
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    document.getElementById('pane-term').classList.toggle('hidden', t.dataset.tab !== 'term');
+    document.getElementById('pane-web').classList.toggle('hidden', t.dataset.tab !== 'web');
+    moveDockTabInd();
+  }));
+
+  // 深色模式切换（图标随状态切换，状态自解释）
+  const themeBtn = document.getElementById('btn-theme-toggle');
+  const ICON_MOON = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const ICON_SUN  = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>';
+  function setThemeIcon(dark){ if (themeBtn) themeBtn.innerHTML = dark ? ICON_SUN : ICON_MOON; }
+  if (themeBtn) {
+    setThemeIcon(document.documentElement.getAttribute('data-theme') === 'dark');
+    themeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      setThemeIcon(!isDark);
+      // 切换后重新定位药丸
+      requestAnimationFrame(() => { moveNavInd(); moveDockTabInd(); });
+    });
+  }
+
+  // 初始化定位
+  window.addEventListener('resize', () => { moveNavInd(); moveDockTabInd(); });
+  window.addEventListener('load', () => { moveNavInd(); moveDockTabInd(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { moveNavInd(); moveDockTabInd(); });
+  requestAnimationFrame(() => { moveNavInd(); moveDockTabInd(); });
+
+  // 让静态卡片演示弹性入场（仅一次）
+  document.querySelectorAll('#cards .card').forEach(c => c.classList.add('card-enter'));
+})();
+</script>
+</body>
+</html>
