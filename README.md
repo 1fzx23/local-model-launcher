@@ -65,13 +65,6 @@ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-
 4. SD3.5 / FLUX 需要额外文本编码器与 VAE，应用会随主模型自动补齐下载（manifest `extraFiles`）。
 5. 下载失败/取消保留 `.part` 文件，断点续传。
 
-## 下载
-
-预编译 exe 可直接下载，无需自己编译：
-
-- **国内直链（推荐，国内下载快）**：
-  `https://ghproxy.net/https://github.com/1fzx23/local-model-launcher/releases/download/v1.0.0/launcher-portable.exe`
-- **GitHub 官方**：[Releases 页面](../../releases)（国内可能较慢）
 
 ## 致谢 / Acknowledgements
 
