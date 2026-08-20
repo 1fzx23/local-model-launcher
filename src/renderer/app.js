@@ -341,9 +341,14 @@ function updateProgress(d) {
   if (txt) {
     const left = txt.querySelector('span');
     if (left) {
-      left.textContent = d.extraFile ? ('附属文件: ' + d.extraFile)
-        : d.extracting ? '解压中…'
-        : (d.received != null && d.total ? (fmtBytes(d.received) + ' / ' + fmtBytes(d.total)) : '连接中…');
+      let leftText;
+      if (d.extraFile) leftText = '附属文件: ' + d.extraFile;
+      else if (d.extracting) leftText = '解压中…';
+      else if (d.received != null && d.total) {
+        leftText = fmtBytes(d.received) + ' / ' + fmtBytes(d.total);
+        if (d.speed) leftText += ' · ' + fmtBytes(d.speed) + '/s';
+      } else leftText = '连接中…';
+      left.textContent = leftText;
     }
     const right = txt.querySelector('span:last-child');
     if (right && d.total) right.textContent = pct.toFixed(1) + '%';

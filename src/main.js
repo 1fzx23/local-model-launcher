@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
+const aria2 = require('./aria2-downloader');
 
 // ---------------------------------------------------------------------------
 // Paths & config
@@ -468,67 +469,83 @@ function registerIpc() {
     if (!sources.length) {
       return { ok: false, reason: '该条目暂无可用的自动下载地址，请到模型/官网主页手动下载后放入模型目录' };
     }
-    // try user-chosen source first, then the rest in order
+    // preferred source first, then the rest (aria2 uses them as mirrors; fallback tries in order)
     const order = [];
     const startIdx = (Number.isInteger(sourceIndex) && sources[sourceIndex]) ? sourceIndex : 0;
     order.push(startIdx);
     for (let i = 0; i < sources.length; i++) if (i !== startIdx) order.push(i);
+    const urls = order.map(i => sources[i].url);
+    const dlId = kind + ':' + id;
 
-    let firstAttempt = true;
-    let lastReason = '未知错误';
-    for (const idx of order) {
-      const source = sources[idx];
-      // switching to a different source: discard any partial file from the previous
-      // (different source => different bytes; resuming would corrupt the file)
-      if (!firstAttempt) {
-        try { fs.unlinkSync(dest + '.part'); } catch (_) {}
+    sendToWin('download-progress', { id: dlId, sourceLabel: sources[startIdx].label || ('源' + (startIdx + 1)), tryingSource: true });
+
+    let result;
+    if (aria2.isAria2Ready()) {
+      // multi-connection download; aria2 handles mirror failover internally
+      result = await aria2.aria2Download({
+        id: dlId, urls,
+        destPath: dest,
+        onProgress: (p) => sendToWin('download-progress', p),
+      });
+    } else {
+      // fallback: single-stream downloader, try each source in order
+      let lastReason = '未知错误';
+      for (const idx of order) {
+        const source = sources[idx];
+        if (idx !== startIdx) { try { fs.unlinkSync(dest + '.part'); } catch (_) {} }
+        sendToWin('download-progress', { id: dlId, sourceLabel: source.label || ('源' + (idx + 1)), tryingSource: true });
+        result = await downloadFile(dlId, source.url, dest);
+        if (result.ok) break;
+        lastReason = result.reason || lastReason;
+        if (result.reason === 'cancelled') { result = { ok: false, reason: 'cancelled', resumable: true }; break; }
       }
-      firstAttempt = false;
-      sendToWin('download-progress', { id: kind + ':' + id, sourceLabel: source.label || ('源' + (idx + 1)), tryingSource: true });
-      const result = await downloadFile(kind + ':' + id, source.url, dest);
-      if (result.ok) {
-        // Companion files (VAE / text encoders): download whatever is still missing
-        if (kind === 'model' && entry.extraFiles) {
-          for (const ef of entry.extraFiles) {
-            const efDest = path.join(modelsDir(), ef.file);
-            if (fs.existsSync(efDest)) continue;
-            const efSrc = (ef.sources || []).find(s => s && s.url && !s.url.startsWith('OTA'));
-            if (!efSrc) continue;
-            sendToWin('download-progress', { id: kind + ':' + id, extraFile: ef.file });
-            const r = await downloadFile(kind + ':' + id, efSrc.url, efDest);
-            if (!r.ok) return { ok: false, reason: '附属文件下载失败(' + ef.file + '): ' + r.reason, status: scanStatus() };
-          }
+      if (!result) result = { ok: false, reason: '所有下载源均失败（最后错误: ' + lastReason + '）' };
+    }
+
+    if (result.ok) {
+      // Companion files (VAE / text encoders): download whatever is still missing
+      if (kind === 'model' && entry.extraFiles) {
+        for (const ef of entry.extraFiles) {
+          const efDest = path.join(modelsDir(), ef.file);
+          if (fs.existsSync(efDest)) continue;
+          const efSrc = (ef.sources || []).find(s => s && s.url && !s.url.startsWith('OTA'));
+          if (!efSrc) continue;
+          sendToWin('download-progress', { id: dlId, extraFile: ef.file });
+          const r = aria2.isAria2Ready()
+            ? await aria2.aria2Download({ id: dlId, urls: [efSrc.url], destPath: efDest, onProgress: (p) => sendToWin('download-progress', p) })
+            : await downloadFile(dlId, efSrc.url, efDest);
+          if (!r.ok) return { ok: false, reason: '附属文件下载失败(' + ef.file + '): ' + r.reason, status: scanStatus() };
         }
-        if (kind === 'runtime') {
-          sendToWin('download-progress', { id: kind + ':' + id, extracting: true });
-          const ex = await extractZip(dest, path.join(config.baseDir, entry.dir));
-          try { fs.unlinkSync(dest); } catch (_) {}
-          if (!ex.ok) return { ok: false, reason: '解压失败: ' + ex.reason };
-          // some zips contain a nested folder; flatten if exe not at root
-          const exeAt = path.join(config.baseDir, entry.dir, entry.exe);
-          if (!fs.existsSync(exeAt)) {
-            const root = path.join(config.baseDir, entry.dir);
-            for (const sub of fs.readdirSync(root)) {
-              const cand = path.join(root, sub, entry.exe);
-              if (fs.existsSync(cand)) {
-                for (const f of fs.readdirSync(path.join(root, sub))) {
-                  fs.renameSync(path.join(root, sub, f), path.join(root, f));
-                }
-                fs.rmdirSync(path.join(root, sub));
-                break;
+      }
+      if (kind === 'runtime') {
+        sendToWin('download-progress', { id: dlId, extracting: true });
+        const ex = await extractZip(dest, path.join(config.baseDir, entry.dir));
+        try { fs.unlinkSync(dest); } catch (_) {}
+        if (!ex.ok) return { ok: false, reason: '解压失败: ' + ex.reason };
+        // some zips contain a nested folder; flatten if exe not at root
+        const exeAt = path.join(config.baseDir, entry.dir, entry.exe);
+        if (!fs.existsSync(exeAt)) {
+          const root = path.join(config.baseDir, entry.dir);
+          for (const sub of fs.readdirSync(root)) {
+            const cand = path.join(root, sub, entry.exe);
+            if (fs.existsSync(cand)) {
+              for (const f of fs.readdirSync(path.join(root, sub))) {
+                fs.renameSync(path.join(root, sub, f), path.join(root, f));
               }
+              fs.rmdirSync(path.join(root, sub));
+              break;
             }
           }
         }
-        return { ...result, status: scanStatus() };
       }
-      lastReason = result.reason || lastReason;
-      if (result.reason === 'cancelled') return { ok: false, reason: 'cancelled', resumable: true };
+      return { ...result, status: scanStatus() };
     }
-    return { ok: false, reason: '所有下载源均失败（最后错误: ' + lastReason + '）' };
+    if (result.reason === 'cancelled') return { ok: false, reason: 'cancelled', resumable: true };
+    return { ok: false, reason: result.reason || '下载失败' };
   });
 
   ipcMain.handle('cancel-download', (e, { id }) => {
+    aria2.cancelAria2Download(id); // no-op if not an aria2 download
     const st = activeDownloads.get(id);
     if (st) { st.cancelled = true; if (st.req) try { st.req.destroy(); } catch (_) {} }
     return { ok: true };
@@ -541,6 +558,7 @@ function registerIpc() {
     const p = path.join(modelsDir(), m.file);
     try { if (fs.existsSync(p)) fs.unlinkSync(p); } catch (err) { return { ok: false, reason: err.message }; }
     try { if (fs.existsSync(p + '.part')) fs.unlinkSync(p + '.part'); } catch (_) {}
+    try { if (fs.existsSync(p + '.part.aria2')) fs.unlinkSync(p + '.part.aria2'); } catch (_) {}
     return { ok: true, status: scanStatus() };
   });
 
@@ -584,14 +602,19 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   loadConfig();
   loadBuiltinManifest();
   registerIpc();
   createWindow();
+  // start aria2 RPC downloader (multi-connection, accurate progress). Non-fatal if it fails:
+  // the single-stream fallback in download-item still works.
+  aria2.startAria2({ configDir: getConfigDir(), baseDir: config.baseDir })
+    .then((ok) => console.log('[aria2] ready=' + ok))
+    .catch((e) => console.error('[aria2] start failed:', e.message));
   // silent OTA check on startup
   fetchRemoteManifest().then((r) => { if (r.updated) sendToWin('manifest-updated', { version: r.version }); });
 });
 
-app.on('window-all-closed', () => { stopAllServers(); app.quit(); });
-app.on('before-quit', stopAllServers);
+app.on('window-all-closed', () => { stopAllServers(); aria2.stopAria2(); app.quit(); });
+app.on('before-quit', () => { stopAllServers(); aria2.stopAria2(); });
