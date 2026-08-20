@@ -469,6 +469,11 @@ input[type=text]:focus, input[type=number]:focus {
 .op-start  { background-color: var(--accent); color: #fff; border-color: var(--accent);
              box-shadow: inset 0 1px 0 rgba(255,255,255,.22), var(--shadow-xs); }
 .op-start:hover { filter: brightness(1.08); }
+/* 启动中禁用态：降低不透明度 + 图标旋转，表示进行中（apple-design：状态可见） */
+.op-btn[disabled] { cursor: default; opacity: .72; }
+.op-btn[disabled]:active { transform: none; }
+.op-start[disabled], .op-start[disabled]:hover { filter: none; }
+.op-start[disabled] .ic { animation: spin 1.1s linear infinite; }
 /* 次级操作：统一描边幽灵按钮（单色系统，靠图标+文字区分） */
 .op-stop, .op-down, .op-cancel {
   background: none; border: 1px solid var(--line-strong); color: var(--text);

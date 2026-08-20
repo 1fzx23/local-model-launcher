@@ -285,12 +285,11 @@ async function launchAndTrack({ item, runtime, args, port, type }) {
   const timeoutMs = runtime.id === 'sycl' ? 600000
     : (runtime.gpu ? 300000 : 180000);
   const isAlive = () => runningServers.get(port) && runningServers.get(port).proc === proc;
-  const hb = setInterval(() => {
-    if (isAlive()) sendToWin('server-log', { port, line: `\x1b[36m[launcher]\x1b[0m 模型仍在加载，请稍候…\r\n` });
-    else clearInterval(hb);
-  }, 30000);
+  const hbTick = () => { if (isAlive()) sendToWin('server-log', { port, line: `\x1b[36m[launcher]\x1b[0m 模型仍在加载，请稍候…\r\n` }); };
+  const hbFast = setTimeout(hbTick, 8000);      // 首次 8s 提示，避免长时间无反馈
+  const hb = setInterval(hbTick, 30000);
   waitForServer(port, { timeoutMs, isAlive }).then((up) => {
-    clearInterval(hb);
+    clearTimeout(hbFast); clearInterval(hb);
     if (!isAlive()) return; // 进程已退出，不再发 running
     if (up) {
       const apiUrl = type === 'llm' ? `http://${config.apiHost || '127.0.0.1'}:${port}/v1` : null;

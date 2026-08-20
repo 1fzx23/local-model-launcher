@@ -103,9 +103,16 @@ function modelCard(m) {
       </div>
       <button class="op-btn op-cancel" data-act="cancel" data-id="${m.id}">取消</button>`;
   } else if (running) {
-    ops = `
-      <button class="op-btn op-stop grow" data-act="stop" data-port="${running.port}">${svgIcon('stop')} 停止服务</button>
-      <button class="op-btn op-link" data-act="focus" data-port="${running.port}" title="查看终端/网页">${svgIcon('terminal')}</button>`;
+    if (running.status === 'starting') {
+      // 启动中：显示「启动中…」禁用按钮（图标旋转）+ 取消，避免误操作且反馈清晰
+      ops = `
+        <button class="op-btn op-start grow" disabled>${svgIcon('rocket')} 启动中…</button>
+        <button class="op-btn op-cancel" data-act="stop" data-port="${running.port}" title="取消启动">取消</button>`;
+    } else {
+      ops = `
+        <button class="op-btn op-stop grow" data-act="stop" data-port="${running.port}">${svgIcon('stop')} 停止服务</button>
+        <button class="op-btn op-link" data-act="focus" data-port="${running.port}" title="查看终端/网页">${svgIcon('terminal')}</button>`;
+    }
   } else if (st.installed) {
     const rtOptions = state.manifest.runtimes
       .filter(r => (m.type === 'sd') === r.exe.startsWith('sd'))
@@ -219,8 +226,8 @@ function renderRunning() {
       ${apiBox}
       <div class="ri-ops">
         <button data-act="focus" data-port="${r.port}">终端</button>
-        <button data-act="web" data-port="${r.port}">网页</button>
-        <button class="stop" data-act="stop" data-port="${r.port}">停止</button>
+        ${r.status === 'starting' ? '' : `<button data-act="web" data-port="${r.port}">网页</button>`}
+        <button class="stop" data-act="stop" data-port="${r.port}">${r.status === 'starting' ? '取消' : '停止'}</button>
       </div>`;
     wrap.appendChild(div);
   }
@@ -322,14 +329,36 @@ function updateProgress(d) {
 async function doStart(id) {
   const sel = document.querySelector(`select[data-rt="${id}"]`);
   const rt = sel ? sel.value : undefined;
-  const r = await window.api.startServer(id, rt);
-  if (!r.ok) { toast('启动失败：' + r.reason); return; }
-  toast('正在启动服务（端口 ' + r.port + '），模型加载可能需要一会儿…');
   const item = state.manifest.models.find(m => m.id === id);
-  state.running = state.running.filter(x => x.port !== r.port);
-  state.running.push({ port: r.port, itemId: id, name: item ? item.name : id, status: 'starting' });
+
+  // 乐观更新：点击后立即进入「启动中」状态并打开终端，不等主进程返回，
+  // 让用户瞬间得到反馈（模型实际加载过程在终端里以等待提示呈现）
+  const port = (item && item.port) || 8080;
+  state.running = state.running.filter(x => x.port !== port);
+  state.running.push({ port, itemId: id, name: item ? item.name : id, status: 'starting' });
   renderAll();
-  openDock(r.port, 'term');
+  openDock(port, 'term');
+  appendTerm(port, '\x1b[36m[launcher]\x1b[0m 正在启动服务，模型加载需要一会儿，请稍候…\n');
+  toast('正在启动 ' + (item ? item.name : id) + '…');
+
+  const r = await window.api.startServer(id, rt);
+  if (!r.ok) {
+    // 启动失败：回滚乐观加入的「启动中」状态，并在终端/dock 反馈
+    state.running = state.running.filter(x => x.port !== port);
+    renderAll();
+    appendTerm(port, '\x1b[31m[launcher]\x1b[0m 启动失败：' + r.reason + '\n');
+    if (activeDockPort === port) $('#dock-status').className = 'dot gray';
+    toast('启动失败：' + r.reason);
+    return;
+  }
+  // 端口与预测一致则无需再动；主进程会通过 onServerStatus 推送 starting/running。
+  // 若返回端口不同（理论上不会），校正到真实端口。
+  if (r.port !== port) {
+    state.running = state.running.filter(x => x.port !== port);
+    state.running.push({ port: r.port, itemId: id, name: item ? item.name : id, status: 'starting' });
+    renderAll();
+    openDock(r.port, 'term');
+  }
 }
 
 async function doDownload(kind, id) {
@@ -394,13 +423,31 @@ function renderDiscover(files) {
 async function doStartCustom(file, type) {
   const sel = document.querySelector(`select[data-crt="${file}"]`);
   const rt = sel ? sel.value : undefined;
-  const r = await window.api.startCustom({ file, runtimeId: rt, type });
-  if (!r.ok) { toast('启动失败：' + r.reason); return; }
-  toast('正在启动本地模型（端口 ' + r.port + '）…');
-  state.running = state.running.filter(x => x.port !== r.port);
-  state.running.push({ port: r.port, itemId: 'local:' + file, name: file, status: 'starting', type });
+  const port = type === 'sd' ? 8081 : 8080;
+
+  // 乐观更新：点击后立即反馈
+  state.running = state.running.filter(x => x.port !== port);
+  state.running.push({ port, itemId: 'local:' + file, name: file, status: 'starting', type });
   renderAll();
-  openDock(r.port, 'term');
+  openDock(port, 'term');
+  appendTerm(port, '\x1b[36m[launcher]\x1b[0m 正在启动本地模型，请稍候…\n');
+  toast('正在启动本地模型…');
+
+  const r = await window.api.startCustom({ file, runtimeId: rt, type });
+  if (!r.ok) {
+    state.running = state.running.filter(x => x.port !== port);
+    renderAll();
+    appendTerm(port, '\x1b[31m[launcher]\x1b[0m 启动失败：' + r.reason + '\n');
+    if (activeDockPort === port) $('#dock-status').className = 'dot gray';
+    toast('启动失败：' + r.reason);
+    return;
+  }
+  if (r.port !== port) {
+    state.running = state.running.filter(x => x.port !== port);
+    state.running.push({ port: r.port, itemId: 'local:' + file, name: file, status: 'starting', type });
+    renderAll();
+    openDock(r.port, 'term');
+  }
 }
 
 // ------------------------------------------------------------------ event wiring

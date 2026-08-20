@@ -1,6 +1,6 @@
 {
-  "manifestVersion": 7,
-  "updatedAt": "2026-07-26",
+  "manifestVersion": 9,
+  "updatedAt": "2026-08-19",
   "note": "OTA catalog (Windows only). Host a newer copy of this file at config.manifestUrl and bump manifestVersion to push updates (fix URLs / add models) without reinstalling the app.",
   "runtimes": [
     {
@@ -988,6 +988,200 @@
         {
           "label": "HF 镜像",
           "url": "https://hf-mirror.com/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3-30b-a3b",
+      "name": "Qwen3-30B-A3B",
+      "file": "Qwen3-30B-A3B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "18.6 GB",
+      "tags": [
+        "30B MoE",
+        "思考模式",
+        "需32GB内存"
+      ],
+      "desc": "Qwen3 旗舰 MoE，总参 30.5B、激活 3.3B，推理与多语言能力强；Q4 量化约 18.6GB。对应 UP 提到的「27B/A3B」档位。",
+      "page": "https://hf-mirror.com/Qwen/Qwen3-30B-A3B-GGUF",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/Qwen/Qwen3-30B-A3B-GGUF/resolve/main/Qwen3-30B-A3B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "deepseek-v4-flash",
+      "name": "DeepSeek-V4-Flash (0731)",
+      "file": "dspark-DeepSeek-V4-Flash-0731-Q8_0.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "10.9 GB",
+      "tags": [
+        "11B级",
+        "GPU推荐",
+        "需16GB内存",
+        "新一代"
+      ],
+      "desc": "DeepSeek-V4 轻量 Flash 版（约 11B，无官方 7B SKU 故取此档），速度极快、显存占用低，Q8 量化约 10.9GB。",
+      "page": "https://hf-mirror.com/unsloth/DeepSeek-V4-Flash-0731-GGUF",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/dspark-DeepSeek-V4-Flash-0731-Q8_0.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3-vl-4b",
+      "name": "Qwen3-VL-4B-Instruct (视觉)",
+      "file": "Qwen3VL-4B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.5+0.8 GB",
+      "tags": [
+        "多模态",
+        "视觉",
+        "图文理解"
+      ],
+      "desc": "Qwen3 视觉语言模型 4B，支持图片理解；需搭配 mmproj 投影文件启用视觉（已放入附加文件）。",
+      "page": "https://hf-mirror.com/Qwen/Qwen3-VL-4B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/Qwen/Qwen3-VL-4B-Instruct-GGUF/resolve/main/Qwen3VL-4B-Instruct-Q4_K_M.gguf"
+        }
+      ],
+      "extraFiles": [
+        {
+          "file": "mmproj-Qwen3VL-4B-Instruct-F16.gguf",
+          "sources": [
+            {
+              "label": "HF 镜像",
+              "url": "https://hf-mirror.com/Qwen/Qwen3-VL-4B-Instruct-GGUF/resolve/main/mmproj-Qwen3VL-4B-Instruct-F16.gguf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ling3-tiny",
+      "name": "Ling-3.0-tiny (Inclusion AI)",
+      "file": "Ling-3.0-tiny-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "4.9 GB",
+      "tags": [
+        "轻量",
+        "GPU推荐",
+        "中文强"
+      ],
+      "desc": "Inclusion AI 开源 Ling-3.0 轻量版，4.9GB Q4，中文与代码表现优秀，核显即可运行。",
+      "page": "https://hf-mirror.com/bartowski/Ling-3.0-tiny-GGUF",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/bartowski/Ling-3.0-tiny-GGUF/resolve/main/Ling-3.0-tiny-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "file": "Qwen3.8-27B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "17.1 GB",
+      "tags": [
+        "27B 稠密",
+        "Qwen3.8",
+        "GPU推荐",
+        "需24GB内存"
+      ],
+      "desc": "Qwen3.8 稠密 27B 主力模型（来自 UP 提到的 Qwen3 系列）。官方 ModelScope 仅提供 BF16/FP8 的 safetensors 分片，无法直接被 llama.cpp 加载；此处使用 unsloth 转换的单文件 GGUF。",
+      "page": "https://www.modelscope.cn/models/Qwen/Qwen3.8-27B",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/unsloth/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.8-27b-fp8",
+      "name": "Qwen3.8-27B (FP8 高精度)",
+      "file": "Qwen3.8-27B-Q8_0.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "29.0 GB",
+      "tags": [
+        "27B 稠密",
+        "FP8高精度",
+        "需32GB内存/GPU",
+        "高质量"
+      ],
+      "desc": "Qwen3.8-27B 的高精度版本，对应官方 FP8 权重；Q8_0 量化保留更多精度，适合显存/内存充足的机器。",
+      "page": "https://www.modelscope.cn/models/Qwen/Qwen3.8-27B-FP8",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/unsloth/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q8_0.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.6-27b",
+      "name": "Qwen3.6-27B",
+      "file": "Qwen3.6-27B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "16.8 GB",
+      "tags": [
+        "27B 稠密",
+        "Qwen3.6",
+        "GPU推荐",
+        "需24GB内存"
+      ],
+      "desc": "Qwen3.6 稠密 27B，Qwen3.8 的前代。官方 ModelScope 仅提供 BF16 safetensors 分片，此处使用 unsloth 转换的单文件 GGUF。",
+      "page": "https://www.modelscope.cn/models/Qwen/Qwen3.6-27B",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.6-35b-a3b-fp8",
+      "name": "Qwen3.6-35B-A3B (MoE / FP8)",
+      "file": "Qwen_Qwen3.6-35B-A3B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "22.3 GB",
+      "tags": [
+        "35B MoE",
+        "激活3B",
+        "FP8原版",
+        "GPU推荐",
+        "需32GB内存",
+        "快推理"
+      ],
+      "desc": "Qwen3.6 的 35B MoE 模型（对应官方 FP8 权重），每 token 仅激活约 3B 参数，推理快、显存友好。GGUF 由 bartowski 转换。",
+      "page": "https://www.modelscope.cn/models/Qwen/Qwen3.6-35B-A3B-FP8",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen_Qwen3.6-35B-A3B-Q4_K_M.gguf"
         }
       ]
     }
