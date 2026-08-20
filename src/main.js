@@ -383,7 +383,18 @@ function scanStatus() {
     const part = p + '.part';
     if (fs.existsSync(p)) {
       const missingExtra = (m.extraFiles || []).filter(ef => !fs.existsSync(path.join(modelsDir(), ef.file))).map(ef => ef.file);
-      status.models[m.id] = { installed: missingExtra.length === 0, size: fs.statSync(p).size, missingExtra };
+      // Integrity guard: a model file that exists but isn't a valid GGUF (e.g. a truncated /
+      // corrupt / 0xFF-filled leftover from an interrupted download) must NOT be reported as
+      // "installed" — otherwise the launcher tries to load it and fails. Flag it corrupt so the
+      // UI offers a re-download instead of a broken "启动" button.
+      let corrupt = false;
+      try {
+        const fd = fs.openSync(p, 'r');
+        const head = Buffer.alloc(4);
+        if (fs.readSync(fd, head, 0, 4, 0) === 4) corrupt = head.toString('latin1') !== 'GGUF';
+        fs.closeSync(fd);
+      } catch (_) { corrupt = false; }
+      status.models[m.id] = { installed: !corrupt && missingExtra.length === 0, size: fs.statSync(p).size, missingExtra, corrupt };
     } else if (fs.existsSync(part)) {
       status.models[m.id] = { installed: false, partial: fs.statSync(part).size };
     } else {

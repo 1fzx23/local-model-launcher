@@ -135,14 +135,16 @@ function modelCard(m) {
     } else {
       const srcOptions = (m.sources || []).map((s, i) => `<option value="${i}">${s.label}</option>`).join('');
       const isPartial = !!st.partial;
+      const isCorrupt = !!st.corrupt;
       const missingExtra = st.missingExtra && st.missingExtra.length;
-      const dlLabel = isPartial ? '继续下载' : (missingExtra ? '补齐附属' : '下载');
+      const dlLabel = isCorrupt ? '重新下载' : (isPartial ? '继续下载' : (missingExtra ? '补齐附属' : '下载'));
       const partialTag = isPartial ? `<span class="tag tag-partial">已下载 ${fmtBytes(st.partial)} · 可续传</span>` : '';
       const extraTag = missingExtra ? `<span class="tag">缺附属文件</span>` : '';
+      const corruptTag = isCorrupt ? `<span class="tag tag-corrupt">文件损坏，需重新下载</span>` : '';
       ops = `
         <select data-src="${m.id}" title="选择下载源">${srcOptions}</select>
         <button class="op-btn op-down grow" data-act="download" data-id="${m.id}">${svgIcon('download')} ${dlLabel}</button>
-        ${partialTag}${extraTag}
+        ${partialTag}${extraTag}${corruptTag}
         ${m.page ? `<button class="op-btn op-link" data-act="page" data-url="${m.page}" title="打开模型主页">${svgIcon('external')}</button>` : ''}`;
     }
   }
