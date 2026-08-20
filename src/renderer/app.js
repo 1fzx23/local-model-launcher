@@ -67,7 +67,8 @@ function renderCards() {
       wrap.appendChild(runtimeCard(r));
     }
   } else {
-    const list = state.manifest.models.filter(m => m.type === (currentView === 'sd' ? 'sd' : 'llm'));
+    const wantType = currentView === 'sd' ? 'sd' : 'llm';
+    const list = state.manifest.models.filter(m => m.type === wantType || m.isLink);
     for (const m of list) {
       if (q && !(m.name + m.desc + (m.tags || []).join('')).toLowerCase().includes(q)) continue;
       wrap.appendChild(modelCard(m));
@@ -152,6 +153,29 @@ function modelCard(m) {
     <div class="card-desc">${m.desc || ''}</div>
     <div class="card-tags">${tags}</div>
     <div class="card-ops">${ops}</div>`;
+  return card;
+}
+
+// 社区/外部入口卡片：点击在浏览器中打开 page（不下载、不启动）
+function linkCard(m) {
+  const card = document.createElement('div');
+  card.className = 'card link';
+  card.dataset.mid = m.id;
+  card.dataset.url = m.page || '';
+  const tags = (m.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-emoji link">${svgIcon('globe')}</div>
+      <div>
+        <div class="card-title">${m.name}</div>
+        <div class="card-size">社区入口 · 在浏览器中打开</div>
+      </div>
+    </div>
+    <div class="card-desc">${m.desc || ''}</div>
+    <div class="card-tags">${tags}</div>
+    <div class="card-ops">
+      <button class="op-btn op-link grow" data-act="page" data-url="${m.page}" title="打开 ${m.name}">${svgIcon('external')} 打开社区</button>
+    </div>`;
   return card;
 }
 
@@ -453,6 +477,12 @@ async function doStartCustom(file, type) {
 // ------------------------------------------------------------------ event wiring
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
+  // 社区入口卡片：点击卡片任意位置（非按钮时）在浏览器中打开
+  const linkCard = e.target.closest('.card.link');
+  if (linkCard && (!btn || !btn.dataset.act)) {
+    const u = linkCard.dataset.url;
+    if (u) return window.api.openExternal(u);
+  }
   if (!btn) return;
   const act = btn.dataset.act;
   if (!act) return;

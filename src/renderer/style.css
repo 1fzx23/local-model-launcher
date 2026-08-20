@@ -435,6 +435,21 @@ input[type=text]:focus, input[type=number]:focus {
 .card-emoji .ic { width: 20px; height: 20px; color: var(--text); }
 .card.sd .card-emoji { background: var(--surface-3); }
 .card.sd .card-emoji .ic { color: var(--text); }
+/* 社区/外部入口卡片：用强调色与圆点图标区分，提示「点击打开」 */
+.card.link {
+  border-color: var(--accent-soft-2);
+  background:
+    linear-gradient(180deg, var(--accent-soft) 0%, rgba(255,255,255,.78) 42%);
+  cursor: pointer;
+}
+.card.link:hover { border-color: var(--accent); }
+.card.link .card-emoji.link {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 16px -6px var(--accent), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.card.link .card-emoji.link .ic { color: #fff; }
+.card.link .card-size { color: var(--accent-press); font-weight: 500; }
 .card-title { font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
 .card-size { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
 .card-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.55; flex: 1; }
