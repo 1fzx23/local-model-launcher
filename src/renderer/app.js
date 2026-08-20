@@ -134,10 +134,15 @@ function modelCard(m) {
         : `<span class="tag">暂不支持自动下载</span>`;
     } else {
       const srcOptions = (m.sources || []).map((s, i) => `<option value="${i}">${s.label}</option>`).join('');
-      const partial = st.partial ? `（已下载 ${fmtBytes(st.partial)}，可续传）` : (st.missingExtra && st.missingExtra.length ? '（缺附属文件，点击补齐）' : '');
+      const isPartial = !!st.partial;
+      const missingExtra = st.missingExtra && st.missingExtra.length;
+      const dlLabel = isPartial ? '继续下载' : (missingExtra ? '补齐附属' : '下载');
+      const partialTag = isPartial ? `<span class="tag tag-partial">已下载 ${fmtBytes(st.partial)} · 可续传</span>` : '';
+      const extraTag = missingExtra ? `<span class="tag">缺附属文件</span>` : '';
       ops = `
         <select data-src="${m.id}" title="选择下载源">${srcOptions}</select>
-        <button class="op-btn op-down grow" data-act="download" data-id="${m.id}">${svgIcon('download')} 下载${partial}</button>
+        <button class="op-btn op-down grow" data-act="download" data-id="${m.id}">${svgIcon('download')} ${dlLabel}</button>
+        ${partialTag}${extraTag}
         ${m.page ? `<button class="op-btn op-link" data-act="page" data-url="${m.page}" title="打开模型主页">${svgIcon('external')}</button>` : ''}`;
     }
   }
