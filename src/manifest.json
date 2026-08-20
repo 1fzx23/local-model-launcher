@@ -1,6 +1,6 @@
 {
-  "manifestVersion": 9,
-  "updatedAt": "2026-08-19",
+  "manifestVersion": 10,
+  "updatedAt": "2026-08-20",
   "note": "OTA catalog (Windows only). Host a newer copy of this file at config.manifestUrl and bump manifestVersion to push updates (fix URLs / add models) without reinstalling the app.",
   "runtimes": [
     {
@@ -1184,6 +1184,1284 @@
           "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen_Qwen3.6-35B-A3B-Q4_K_M.gguf"
         }
       ]
+    },
+    {
+      "id": "ernie-0.3b",
+      "name": "ERNIE-4.5-0.3B-PT",
+      "file": "baidu_ERNIE-4.5-0.3B-PT-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cpu",
+      "sizeText": "0.2 GB",
+      "tags": [
+        "超轻量",
+        "中文",
+        "百度"
+      ],
+      "desc": "百度文心 ERNIE 4.5 超轻量版 270M 参数。",
+      "page": "https://huggingface.co/bartowski/baidu_ERNIE-4.5-0.3B-PT-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/baidu_ERNIE-4.5-0.3B-PT-GGUF/resolve/main/baidu_ERNIE-4.5-0.3B-PT-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma3-270m",
+      "name": "Gemma-3-270m-it",
+      "file": "google_gemma-3-270m-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cpu",
+      "sizeText": "0.2 GB",
+      "tags": [
+        "超轻量",
+        "Google"
+      ],
+      "desc": "Google Gemma 3 极轻量 270M。",
+      "page": "https://huggingface.co/bartowski/google_gemma-3-270m-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-3-270m-it-GGUF/resolve/main/google_gemma-3-270m-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen2.5-0.5b",
+      "name": "Qwen2.5-0.5B-Instruct",
+      "file": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cpu",
+      "sizeText": "0.35 GB",
+      "tags": [
+        "超轻量",
+        "Qwen"
+      ],
+      "desc": "Qwen2.5 极小杯 500M。",
+      "page": "https://huggingface.co/bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.5-0.8b",
+      "name": "Qwen3.5-0.8B",
+      "file": "Qwen_Qwen3.5-0.8B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cpu",
+      "sizeText": "0.55 GB",
+      "tags": [
+        "超轻量",
+        "Qwen3.5"
+      ],
+      "desc": "Qwen3.5 极小杯 800M。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3.5-0.8B-GGUF/resolve/main/Qwen_Qwen3.5-0.8B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma3-1b",
+      "name": "Gemma-3-1B-it",
+      "file": "google_gemma-3-1b-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cpu",
+      "sizeText": "0.7 GB",
+      "tags": [
+        "轻量",
+        "Google"
+      ],
+      "desc": "Google Gemma 3 小杯 1B。",
+      "page": "https://huggingface.co/bartowski/google_gemma-3-1b-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-3-1b-it-GGUF/resolve/main/google_gemma-3-1b-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "smolm2-1.7b",
+      "name": "SmolLM2-1.7B-Instruct",
+      "file": "SmolLM2-1.7B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cpu",
+      "sizeText": "1.2 GB",
+      "tags": [
+        "轻量",
+        "HuggingFace"
+      ],
+      "desc": "HuggingFace SmolLM2 1.7B 高效小模型。",
+      "page": "https://huggingface.co/bartowski/SmolLM2-1.7B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/SmolLM2-1.7B-Instruct-GGUF/resolve/main/SmolLM2-1.7B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.5-2b",
+      "name": "Qwen3.5-2B",
+      "file": "Qwen_Qwen3.5-2B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "1.4 GB",
+      "tags": [
+        "轻量",
+        "Qwen3.5"
+      ],
+      "desc": "Qwen3.5 代 2B 日常轻任务首选。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "lfm2.5-2.6b",
+      "name": "LFM2.5-2.6B (LiquidAI)",
+      "file": "LiquidAI_LFM2.5-2.6B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "1.8 GB",
+      "tags": [
+        "轻量",
+        "LiquidAI",
+        "NEW"
+      ],
+      "desc": "Liquid AI LFM 2.5 新一代液体架构。",
+      "page": "https://huggingface.co/bartowski/LiquidAI_LFM2.5-2.6B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/LiquidAI_LFM2.5-2.6B-GGUF/resolve/main/LiquidAI_LFM2.5-2.6B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "yulan-mini",
+      "name": "YuLan-Mini (元宝)",
+      "file": "YuLan-Mini-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "1.7 GB",
+      "tags": [
+        "轻量",
+        "中文",
+        "字节"
+      ],
+      "desc": "字节跳动 YuLan Mini 中文小模型。",
+      "page": "https://huggingface.co/bartowski/YuLan-Mini-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/YuLan-Mini-GGUF/resolve/main/YuLan-Mini-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma4-e2b",
+      "name": "Gemma-4-E2B-it (extra-small)",
+      "file": "google_gemma-4-E2B-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "1.6 GB",
+      "tags": [
+        "轻量",
+        "Google",
+        "Gemma4"
+      ],
+      "desc": "Google Gemma 4 极小杯 E2B 端侧友好。",
+      "page": "https://huggingface.co/bartowski/google_gemma-4-E2B-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-4-E2B-it-GGUF/resolve/main/google_gemma-4-E2B-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "dolphin3-3b",
+      "name": "Dolphin3.0-Qwen2.5-3B",
+      "file": "Dolphin3.0-Qwen2.5-3b-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.1 GB",
+      "tags": [
+        "轻量",
+        "对话",
+        "无审查"
+      ],
+      "desc": "Dolphin 3.0 基于 Qwen2.5 的 3B 无审查模型。",
+      "page": "https://huggingface.co/bartowski/Dolphin3.0-Qwen2.5-3b-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Dolphin3.0-Qwen2.5-3b-GGUF/resolve/main/Dolphin3.0-Qwen2.5-3b-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "hermes3-3b",
+      "name": "Hermes-3-Llama-3.2-3B",
+      "file": "Hermes-3-Llama-3.2-3B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.2 GB",
+      "tags": [
+        "轻量",
+        "Llama3.2"
+      ],
+      "desc": "Nous Hermes 3 Llama 3.2 3B 通用助手。",
+      "page": "https://huggingface.co/bartowski/Hermes-3-Llama-3.2-3B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Hermes-3-Llama-3.2-3B-GGUF/resolve/main/Hermes-3-Llama-3.2-3B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen2.5-3b",
+      "name": "Qwen2.5-3B-Instruct",
+      "file": "Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.1 GB",
+      "tags": [
+        "轻量",
+        "Qwen2.5"
+      ],
+      "desc": "Qwen2.5 的 3B 小杯版本。",
+      "page": "https://huggingface.co/bartowski/Qwen2.5-3B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen2.5-3B-Instruct-GGUF/resolve/main/Qwen2.5-3B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma3n-e4b",
+      "name": "Gemma-3n-E4B-it (nano)",
+      "file": "google_gemma-3n-E4B-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.9 GB",
+      "tags": [
+        "轻量",
+        "Google",
+        "nano"
+      ],
+      "desc": "Google Gemma 3 nano 4B (E4B) 轻量多语言。",
+      "page": "https://huggingface.co/bartowski/google_gemma-3n-E4B-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-3n-E4B-it-GGUF/resolve/main/google_gemma-3n-E4B-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma3-4b",
+      "name": "Gemma-3-4B-it",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.8 GB",
+      "tags": [
+        "轻量",
+        "Google"
+      ],
+      "desc": "Google Gemma 3 小杯 4B 多语言均衡。",
+      "page": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-3-4b-it-GGUF/resolve/main/google_gemma-3-4b-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "nemotron-nano-4b",
+      "name": "Nemotron-3-Nano-4B (NVIDIA)",
+      "file": "nvidia_Nemotron-3-Nano-4B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.7 GB",
+      "tags": [
+        "轻量",
+        "NVIDIA",
+        "商用"
+      ],
+      "desc": "NVIDIA Nemotron 3 Nano 4B 商用量化模型。",
+      "page": "https://huggingface.co/bartowski/nvidia_Nemotron-3-Nano-4B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/nvidia_Nemotron-3-Nano-4B-GGUF/resolve/main/nvidia_Nemotron-3-Nano-4B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "phi31-mini-4k",
+      "name": "Phi-3.1-mini-4K-instruct",
+      "file": "Phi-3.1-mini-4k-instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.6 GB",
+      "tags": [
+        "轻量",
+        "微软",
+        "数理"
+      ],
+      "desc": "微软 Phi-3.1 mini 数理能力强。",
+      "page": "https://huggingface.co/bartowski/Phi-3.1-mini-4k-instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Phi-3.1-mini-4k-instruct-GGUF/resolve/main/Phi-3.1-mini-4k-instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "fara-7b",
+      "name": "Microsoft Fara-7B",
+      "file": "microsoft_Fara-7B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "4.9 GB",
+      "tags": [
+        "7B",
+        "微软",
+        "多语言"
+      ],
+      "desc": "微软 Fara 7B 多语言模型。",
+      "page": "https://huggingface.co/bartowski/microsoft_Fara-7B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/microsoft_Fara-7B-GGUF/resolve/main/microsoft_Fara-7B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "mistral-7b",
+      "name": "Mistral-7B-Instruct-v0.3",
+      "file": "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "4.9 GB",
+      "tags": [
+        "7B",
+        "Mistral",
+        "经典"
+      ],
+      "desc": "Mistral 经典 7B v0.3 一代开源传奇。",
+      "page": "https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "r1-distill-7b",
+      "name": "DeepSeek-R1-Distill-Qwen-7B",
+      "file": "DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "4.9 GB",
+      "tags": [
+        "7B",
+        "深度推理",
+        "R1"
+      ],
+      "desc": "DeepSeek R1 蒸馏 7B 思维链推理小钢炮。",
+      "page": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "r1-qwen3-8b",
+      "name": "DeepSeek-R1-0528-Qwen3-8B",
+      "file": "deepseek-ai_DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "5.6 GB",
+      "tags": [
+        "8B",
+        "深度推理",
+        "R1",
+        "NEW"
+      ],
+      "desc": "DeepSeek R1 最新蒸馏到 Qwen3-8B 推理升级。",
+      "page": "https://huggingface.co/bartowski/deepseek-ai_DeepSeek-R1-0528-Qwen3-8B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/deepseek-ai_DeepSeek-R1-0528-Qwen3-8B-GGUF/resolve/main/deepseek-ai_DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "anubis-mini-8b",
+      "name": "Anubis-Mini-8B-v1",
+      "file": "TheDrummer_Anubis-Mini-8B-v1-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "5.3 GB",
+      "tags": [
+        "8B",
+        "角色扮演",
+        "创意"
+      ],
+      "desc": "TheDrummer Anubis Mini 8B 角色扮演专用。",
+      "page": "https://huggingface.co/bartowski/TheDrummer_Anubis-Mini-8B-v1-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/TheDrummer_Anubis-Mini-8B-v1-GGUF/resolve/main/TheDrummer_Anubis-Mini-8B-v1-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "minicpm-v2-6",
+      "name": "MiniCPM-V-2.6",
+      "file": "MiniCPM-V-2_6-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "5.0 GB",
+      "tags": [
+        "8B",
+        "视觉",
+        "面壁"
+      ],
+      "desc": "面壁 MiniCPM-V 2.6 多模态模型。",
+      "page": "https://huggingface.co/bartowski/MiniCPM-V-2_6-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/MiniCPM-V-2_6-GGUF/resolve/main/MiniCPM-V-2_6-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "glm4-9b-0414",
+      "name": "GLM-4-9B-0414 (智谱)",
+      "file": "THUDM_GLM-4-9B-0414-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "6.0 GB",
+      "tags": [
+        "9B",
+        "中文强",
+        "智谱"
+      ],
+      "desc": "智谱 GLM-4 9B 0414 中文增强更新。",
+      "page": "https://huggingface.co/bartowski/THUDM_GLM-4-9B-0414-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/THUDM_GLM-4-9B-0414-GGUF/resolve/main/THUDM_GLM-4-9B-0414-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "peach-9b",
+      "name": "Peach-9B-8k-Roleplay",
+      "file": "Peach-9B-8k-Roleplay-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "6.1 GB",
+      "tags": [
+        "9B",
+        "角色扮演"
+      ],
+      "desc": "Peach 9B 角色扮演专用模型。",
+      "page": "https://huggingface.co/bartowski/Peach-9B-8k-Roleplay-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Peach-9B-8k-Roleplay-GGUF/resolve/main/Peach-9B-8k-Roleplay-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwythos-9b",
+      "name": "Qwythos-9B-v2",
+      "file": "empero-ai_Qwythos-9B-v2-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "6.2 GB",
+      "tags": [
+        "9B",
+        "叙事",
+        "创意"
+      ],
+      "desc": "empero.ai Qwythos 9B v2 叙事写作模型。",
+      "page": "https://huggingface.co/bartowski/empero-ai_Qwythos-9B-v2-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/empero-ai_Qwythos-9B-v2-GGUF/resolve/main/empero-ai_Qwythos-9B-v2-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "copaw-flash-9b",
+      "name": "CoPaw-Flash-9B",
+      "file": "agentscope-ai_CoPaw-Flash-9B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "6.2 GB",
+      "tags": [
+        "9B",
+        "Agent",
+        "多智能体"
+      ],
+      "desc": "阿里 AgentScope CoPaw Flash 9B 多智能体协作。",
+      "page": "https://huggingface.co/bartowski/agentscope-ai_CoPaw-Flash-9B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/agentscope-ai_CoPaw-Flash-9B-GGUF/resolve/main/agentscope-ai_CoPaw-Flash-9B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.5-9b",
+      "name": "Qwen3.5-9B",
+      "file": "Qwen_Qwen3.5-9B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "6.2 GB",
+      "tags": [
+        "9B",
+        "Qwen3.5"
+      ],
+      "desc": "Qwen3.5 代 9B 均衡之选综合强。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen3.5-9B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3.5-9B-GGUF/resolve/main/Qwen_Qwen3.5-9B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "jackrong-qwen3.5-9b",
+      "name": "Jackrong-Qwen3.5-9B-Neo",
+      "file": "Jackrong_Qwen3.5-9B-Neo-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "6.4 GB",
+      "tags": [
+        "9B",
+        "Qwen3.5",
+        "微调"
+      ],
+      "desc": "社区微调 Qwen3.5-9B Neo 特定场景优化。",
+      "page": "https://huggingface.co/bartowski/Jackrong_Qwen3.5-9B-Neo-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Jackrong_Qwen3.5-9B-Neo-GGUF/resolve/main/Jackrong_Qwen3.5-9B-Neo-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma4-12b",
+      "name": "Gemma-4-12B-it",
+      "file": "gemma-4-12B-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "8.3 GB",
+      "tags": [
+        "12B",
+        "Google",
+        "Gemma4"
+      ],
+      "desc": "Google Gemma 4 代 12B 多模态原生支持。",
+      "page": "https://huggingface.co/bartowski/gemma-4-12B-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/gemma-4-12B-it-GGUF/resolve/main/gemma-4-12B-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma3-12b-qat",
+      "name": "Gemma-3-12B-it-QAT (量化感知)",
+      "file": "google_gemma-3-12b-it-qat-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "8.2 GB",
+      "tags": [
+        "12B",
+        "Google",
+        "QAT",
+        "高精度"
+      ],
+      "desc": "Google Gemma 3 12B QAT 量化感知训练精度接近 FP16。",
+      "page": "https://huggingface.co/bartowski/google_gemma-3-12b-it-qat-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-3-12b-it-qat-GGUF/resolve/main/google_gemma-3-12b-it-qat-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "magnum-v4-12b",
+      "name": "Magnum-v4-12B",
+      "file": "magnum-v4-12b-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "8.5 GB",
+      "tags": [
+        "12B",
+        "角色扮演",
+        "代码"
+      ],
+      "desc": "Magnum v4 12B 角色扮演与代码双优。",
+      "page": "https://huggingface.co/bartowski/magnum-v4-12b-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/magnum-v4-12b-GGUF/resolve/main/magnum-v4-12b-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen2-vl-2b",
+      "name": "Qwen2-VL-2B-Instruct (视觉)",
+      "file": "Qwen2-VL-2B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "1.6 GB",
+      "tags": [
+        "视觉",
+        "轻量",
+        "Qwen"
+      ],
+      "desc": "Qwen2-VL 2B 极轻量视觉语言模型可理解图片。",
+      "page": "https://huggingface.co/bartowski/Qwen2-VL-2B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen2-VL-2B-Instruct-GGUF/resolve/main/Qwen2-VL-2B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen2-vl-7b",
+      "name": "Qwen2-VL-7B-Instruct (视觉)",
+      "file": "Qwen2-VL-7B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "5.0 GB",
+      "tags": [
+        "视觉",
+        "Qwen",
+        "GPU推荐"
+      ],
+      "desc": "Qwen2-VL 7B 图文理解能力出色。",
+      "page": "https://huggingface.co/bartowski/Qwen2-VL-7B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen2-VL-7B-Instruct-GGUF/resolve/main/Qwen2-VL-7B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3-vl-8b",
+      "name": "Qwen3-VL-8B-Instruct (视觉)",
+      "file": "Qwen_Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "5.5 GB",
+      "tags": [
+        "视觉",
+        "Qwen3",
+        "GPU推荐"
+      ],
+      "desc": "Qwen3-VL 8B 支持图片理解与 OCR。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen3-VL-8B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen_Qwen3-VL-8B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "dscoder-v2-lite",
+      "name": "DeepSeek-Coder-V2-Lite",
+      "file": "DeepSeek-Coder-V2-lite-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "11.0 GB",
+      "tags": [
+        "15B",
+        "代码",
+        "DeepSeek"
+      ],
+      "desc": "DeepSeek Coder V2 Lite 精简代码模型。",
+      "page": "https://huggingface.co/bartowski/DeepSeek-Coder-V2-lite-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/DeepSeek-Coder-V2-lite-Instruct-GGUF/resolve/main/DeepSeek-Coder-V2-lite-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "abszero-coder14b",
+      "name": "Absolute-Zero-Reasoner-Coder-14B",
+      "file": "andrewzh_Absolute_Zero_Reasoner-Coder-14b-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "10.3 GB",
+      "tags": [
+        "14B",
+        "代码",
+        "推理"
+      ],
+      "desc": "Absolute Zero Reasoner Coder 14B 推理链代码专家。",
+      "page": "https://huggingface.co/bartowski/andrewzh_Absolute_Zero_Reasoner-Coder-14b-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/andrewzh_Absolute_Zero_Reasoner-Coder-14b-GGUF/resolve/main/andrewzh_Absolute_Zero_Reasoner-Coder-14b-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen2.5-coder-14b",
+      "name": "Qwen2.5-Coder-14B-Instruct",
+      "file": "Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "10.3 GB",
+      "tags": [
+        "14B",
+        "代码",
+        "Qwen"
+      ],
+      "desc": "Qwen2.5 Coder 14B 专精代码生成与调试。",
+      "page": "https://huggingface.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF/resolve/main/Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen2.5-vl-32b",
+      "name": "Qwen2.5-VL-32B-Instruct (视觉)",
+      "file": "Qwen_Qwen2.5-VL-32B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "22.0 GB",
+      "tags": [
+        "视觉",
+        "32B",
+        "需32GB内存"
+      ],
+      "desc": "Qwen2.5-VL 32B 大杯复杂图文理解。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen2.5-VL-32B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen2.5-VL-32B-Instruct-GGUF/resolve/main/Qwen_Qwen2.5-VL-32B-Instruct-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "codestral-22b",
+      "name": "Codestral-22B-v0.1 (Mistral)",
+      "file": "Codestral-22B-v0.1-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "15.3 GB",
+      "tags": [
+        "22B",
+        "代码",
+        "Mistral",
+        "需24GB内存"
+      ],
+      "desc": "Mistral Codestral 22B 代码旗舰 FILL 中间填充能力。",
+      "page": "https://huggingface.co/bartowski/Codestral-22B-v0.1-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Codestral-22B-v0.1-GGUF/resolve/main/Codestral-22B-v0.1-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "medgemma-27b",
+      "name": "MedGemma-27B-it (医疗)",
+      "file": "google_medgemma-27b-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "17.9 GB",
+      "tags": [
+        "27B",
+        "医疗",
+        "Google",
+        "需24GB内存"
+      ],
+      "desc": "Google MedGemma 27B 医疗专用医学问答与分析。",
+      "page": "https://huggingface.co/bartowski/google_medgemma-27b-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_medgemma-27b-it-GGUF/resolve/main/google_medgemma-27b-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "bigbubba-qwen3.6-27b",
+      "name": "BigBubba-Qwen3.6-27B (Merge)",
+      "file": "nbeerbower_BigBubba-Qwen3.6-27B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "18.8 GB",
+      "tags": [
+        "27B",
+        "Merge",
+        "需24GB内存"
+      ],
+      "desc": "BigBubba Qwen3.6 27B 社区融合模型综合增强。",
+      "page": "https://huggingface.co/bartowski/nbeerbower_BigBubba-Qwen3.6-27B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/nbeerbower_BigBubba-Qwen3.6-27B-GGUF/resolve/main/nbeerbower_BigBubba-Qwen3.6-27B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "glm4.7-flash",
+      "name": "GLM-4.7-Flash (智谱)",
+      "file": "zai-org_GLM-4.7-Flash-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "19.8 GB",
+      "tags": [
+        "29B",
+        "中文强",
+        "智谱",
+        "需32GB内存"
+      ],
+      "desc": "智谱 GLM-4.7 Flash 最新速查版中文顶尖。",
+      "page": "https://huggingface.co/bartowski/zai-org_GLM-4.7-Flash-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/zai-org_GLM-4.7-Flash-GGUF/resolve/main/zai-org_GLM-4.7-Flash-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "north-mini-code",
+      "name": "North-Mini-Code-1.0",
+      "file": "North-Mini-Code-1.0-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "21.0 GB",
+      "tags": [
+        "代码",
+        "30B级"
+      ],
+      "desc": "North Mini Code 1.0 代码生成专用大模型。",
+      "page": "https://huggingface.co/bartowski/North-Mini-Code-1.0-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/North-Mini-Code-1.0-GGUF/resolve/main/North-Mini-Code-1.0-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "muse-glimmer-30b",
+      "name": "Muse-Glimmer-30B-Esper4",
+      "file": "ValiantLabs_Muse-Glimmer-30B-Esper4-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "20.8 GB",
+      "tags": [
+        "30B",
+        "创意",
+        "NEW",
+        "需32GB内存"
+      ],
+      "desc": "ValiantLabs Muse Glimmer 30B Esper4 创意写作。",
+      "page": "https://huggingface.co/bartowski/ValiantLabs_Muse-Glimmer-30B-Esper4-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/ValiantLabs_Muse-Glimmer-30B-Esper4-GGUF/resolve/main/ValiantLabs_Muse-Glimmer-30B-Esper4-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "darkc0de-muse-glimmer",
+      "name": "Muse-Glimmer-30B-Heretic",
+      "file": "darkc0de_Muse-Glimmer-30B-heretic-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "20.8 GB",
+      "tags": [
+        "30B",
+        "创意",
+        "Heretic",
+        "需32GB内存"
+      ],
+      "desc": "Muse Glimmer 30B Heretic 无限制创意模式。",
+      "page": "https://huggingface.co/bartowski/darkc0de_Muse-Glimmer-30B-heretic-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/darkc0de_Muse-Glimmer-30B-heretic-GGUF/resolve/main/darkc0de_Muse-Glimmer-30B-heretic-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "artemis-31b",
+      "name": "Artemis-31B-v1",
+      "file": "TheDrummer_Artemis-31B-v1-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "21.3 GB",
+      "tags": [
+        "31B",
+        "角色扮演",
+        "NEW",
+        "需32GB内存"
+      ],
+      "desc": "TheDrummer Artemis 31B 角色扮演旗舰。",
+      "page": "https://huggingface.co/bartowski/TheDrummer_Artemis-31B-v1-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/TheDrummer_Artemis-31B-v1-GGUF/resolve/main/TheDrummer_Artemis-31B-v1-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "glistening-gem-31b",
+      "name": "Glistening-Gem-31B-v2.0",
+      "file": "sophosympatheia_Glistening-Gem-31B-v2.0-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "21.3 GB",
+      "tags": [
+        "31B",
+        "叙事",
+        "NEW",
+        "需32GB内存"
+      ],
+      "desc": "Sophosympatheia Glistening Gem 31B 叙事写作大师。",
+      "page": "https://huggingface.co/bartowski/sophosympatheia_Glistening-Gem-31B-v2.0-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/sophosympatheia_Glistening-Gem-31B-v2.0-GGUF/resolve/main/sophosympatheia_Glistening-Gem-31B-v2.0-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma4-31b",
+      "name": "Gemma-4-31B-it",
+      "file": "google_gemma-4-31B-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "21.3 GB",
+      "tags": [
+        "31B",
+        "Google",
+        "Gemma4",
+        "需32GB内存"
+      ],
+      "desc": "Google Gemma 4 代 31B 大杯原生多模态架构。",
+      "page": "https://huggingface.co/bartowski/google_gemma-4-31B-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-4-31B-it-GGUF/resolve/main/google_gemma-4-31B-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3.5-35b-a3b",
+      "name": "Qwen3.5-35B-A3B (MoE)",
+      "file": "Qwen_Qwen3.5-35B-A3B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "23.8 GB",
+      "tags": [
+        "35B MoE",
+        "激活3B",
+        "Qwen3.5",
+        "快推理",
+        "需32GB内存"
+      ],
+      "desc": "Qwen3.5 MoE 35B 总参/3.5B 激活速度快智力高。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen3.5-35B-A3B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3.5-35B-A3B-GGUF/resolve/main/Qwen_Qwen3.5-35B-A3B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gemma4-26b-a4b",
+      "name": "Gemma-4-26B-A4B-it (MoE)",
+      "file": "google_gemma-4-26B-A4B-it-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "17.6 GB",
+      "tags": [
+        "26B MoE",
+        "激活4B",
+        "Google",
+        "Gemma4",
+        "需24GB内存"
+      ],
+      "desc": "Google Gemma 4 MoE 26B 总参/4B 激活高效多模态。",
+      "page": "https://huggingface.co/bartowski/google_gemma-4-26B-A4B-it-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/google_gemma-4-26B-A4B-it-GGUF/resolve/main/google_gemma-4-26B-A4B-it-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "frontis-ma1-35b",
+      "name": "Frontis-MA1-35B",
+      "file": "FrontisAI_Frontis-MA1-35B-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "23.8 GB",
+      "tags": [
+        "35B",
+        "Frontis",
+        "NEW",
+        "需32GB内存"
+      ],
+      "desc": "Frontis AI MA1 35B 全能大模型。",
+      "page": "https://huggingface.co/bartowski/FrontisAI_Frontis-MA1-35B-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/FrontisAI_Frontis-MA1-35B-GGUF/resolve/main/FrontisAI_Frontis-MA1-35B-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "xyz-aquila",
+      "name": "XYZ-Aquila-Mini",
+      "file": "XYZAILab_XYZ-Aquila-mini-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "23.8 GB",
+      "tags": [
+        "34B",
+        "NEW",
+        "需32GB内存"
+      ],
+      "desc": "XYZ Lab Aquila Mini 34B 新模型。",
+      "page": "https://huggingface.co/bartowski/XYZAILab_XYZ-Aquila-mini-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/XYZAILab_XYZ-Aquila-mini-GGUF/resolve/main/XYZAILab_XYZ-Aquila-mini-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "arex-turbo",
+      "name": "BAAI-AREX-Turbo",
+      "file": "BAAI_AREX-Turbo-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "sizeText": "2.9 GB",
+      "tags": [
+        "4B",
+        "BAAI",
+        "中科院",
+        "NEW"
+      ],
+      "desc": "中科院 BAAI AREX Turbo 4B 高效推理模型。",
+      "page": "https://huggingface.co/bartowski/BAAI_AREX-Turbo-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/BAAI_AREX-Turbo-GGUF/resolve/main/BAAI_AREX-Turbo-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "kwaipilot-kat",
+      "name": "Kwaipilot-KAT-Coder-V2.5-Dev",
+      "file": "Kwaipilot_KAT_Coder-V2.5-Dev-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "23.8 GB",
+      "tags": [
+        "34B",
+        "代码",
+        "NEW"
+      ],
+      "desc": "Kwaipilot KAT Coder V2.5 Dev 新一代代码模型。",
+      "page": "https://huggingface.co/bartowski/Kwaipilot_KAT-Coder-V2.5-Dev-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Kwaipilot_KAT-Coder-V2.5-Dev-GGUF/resolve/main/Kwaipilot_KAT_Coder-V2.5-Dev-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "gpt-oss-20b",
+      "name": "OpenAI-GPT-OSS-20B",
+      "file": "openai_gpt-oss-20b-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "sizeText": "13.9 GB",
+      "tags": [
+        "20B",
+        "OpenAI",
+        "实验性",
+        "需24GB内存"
+      ],
+      "desc": "OpenAI 开源 GPT-OSS 20B 实验模型 MXFP4 量化。",
+      "page": "https://huggingface.co/bartowski/openai_gpt-oss-20b-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/openai_gpt-oss-20b-GGUF/resolve/main/openai_gpt-oss-20b-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "qwen3-coder-next",
+      "name": "Qwen3-Coder-Next (79B)",
+      "file": "Qwen_Qwen3-Coder-Next-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda133",
+      "sizeText": "47.5 GB",
+      "tags": [
+        "79B",
+        "代码",
+        "Qwen3",
+        "需64GB内存"
+      ],
+      "desc": "Qwen3 Coder Next 79B 代码领域前沿模型。",
+      "page": "https://huggingface.co/bartowski/Qwen_Qwen3-Coder-Next-GGUF",
+      "sources": [
+        {
+          "label": "HF镜像",
+          "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3-Coder-Next-GGUF/resolve/main/Qwen_Qwen3-Coder-Next-Q4_K_M.gguf"
+        }
+      ]
+    },
+    {
+      "id": "modelscope-hub",
+      "name": "🔍 魔搭 ModelScope 社区",
+      "file": "",
+      "type": "link",
+      "port": 0,
+      "defaultRuntime": "",
+      "sizeText": "—",
+      "tags": [
+        "入口",
+        "社区",
+        "魔搭"
+      ],
+      "desc": "访问魔搭 ModelScope 社区发现更多国产开源模型（含 GGUF/Safetensors 格式）。部分模型可直接下载使用，其余可通过页面链接获取。",
+      "page": "https://modelscope.cn/collections/GGUF",
+      "sources": [],
+      "isLink": true
     }
   ]
 }
