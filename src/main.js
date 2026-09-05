@@ -306,6 +306,24 @@ async function launchAndTrack({ item, runtime, args, port, type }) {
   return { ok: true, port };
 }
 
+// Translate the "advanced options" (config.advanced) into llama-server launch flags.
+// Only non-default values are emitted, so the launcher stays out of the way unless configured.
+function pushAdvancedLLMArgs(args) {
+  const a = config.advanced;
+  if (!a) return;
+  if (a.ctxSize) args.push('-c', String(a.ctxSize));
+  if (a.batchSize) args.push('-b', String(a.batchSize));
+  if (a.flashAttn && a.flashAttn !== 'auto') args.push('-fa', a.flashAttn);
+  if (a.mlock) args.push('--mlock');
+  if (a.noMmap) args.push('--no-mmap');
+  if (a.reasoningBudget != null && a.reasoningBudget !== '') args.push('--reasoning-budget', String(a.reasoningBudget));
+  if (a.parallel && Number(a.parallel) > 0) args.push('-np', String(a.parallel));
+  if (a.contBatching === false) args.push('--no-cont-batching');
+  if (a.apiKey) args.push('--api-key', a.apiKey);
+  if (a.lookupCacheStatic) args.push('-lcs', a.lookupCacheStatic);
+  if (a.lookupCacheDynamic) args.push('-lcd', a.lookupCacheDynamic);
+}
+
 async function startServer(item, runtimeId) {
   const port = item.port || 8080;
 
@@ -341,9 +359,19 @@ async function startServer(item, runtimeId) {
     args.push('-m', modelPath);
   } else {
     args = ['--port', String(port), '-n', String(config.nPredict || 200)];
-    if (runtime.gpu) args.push('-ngl', '99');
+    if (runtime.gpu) {
+      if (config.advanced && config.advanced.gpuLayers) args.push('-ngl', String(config.advanced.gpuLayers));
+      else args.push('-ngl', '99');
+    }
     if (config.threads > 0) args.push('-t', String(config.threads));
     if (config.apiHost) args.push('--host', config.apiHost);
+    // Multimodal: attach the vision projector (--mmproj) when the model declares one.
+    if (item.mmproj) {
+      const mp = path.join(modelsDir(), item.mmproj);
+      if (!fs.existsSync(mp)) return { ok: false, reason: '缺少多模态投影文件: ' + item.mmproj + '（请先下载以补齐附属文件）' };
+      args.push('--mmproj', mp);
+    }
+    pushAdvancedLLMArgs(args);
     args.push('-m', modelPath);
   }
 
@@ -365,9 +393,13 @@ async function startCustom({ file, runtimeId, type }) {
     args = ['--listen-port', String(port), '-m', modelPath];
   } else {
     args = ['--port', String(port), '-n', String(config.nPredict || 200)];
-    if (runtime.gpu) args.push('-ngl', '99');
+    if (runtime.gpu) {
+      if (config.advanced && config.advanced.gpuLayers) args.push('-ngl', String(config.advanced.gpuLayers));
+      else args.push('-ngl', '99');
+    }
     if (config.threads > 0) args.push('-t', String(config.threads));
     if (config.apiHost) args.push('--host', config.apiHost);
+    pushAdvancedLLMArgs(args);
     args.push('-m', modelPath);
   }
   return launchAndTrack({ item, runtime, args, port, type: type || 'llm' });
@@ -382,7 +414,8 @@ function scanStatus() {
     const p = path.join(modelsDir(), m.file);
     const part = p + '.part';
     if (fs.existsSync(p)) {
-      const missingExtra = (m.extraFiles || []).filter(ef => !fs.existsSync(path.join(modelsDir(), ef.file))).map(ef => ef.file);
+      const missingExtra = (m.extraFiles || []).concat(m.mmproj ? [{ file: m.mmproj }] : [])
+        .filter(ef => !fs.existsSync(path.join(modelsDir(), ef.file))).map(ef => ef.file);
       // Integrity guard: a model file that exists but isn't a valid GGUF (e.g. a truncated /
       // corrupt / 0xFF-filled leftover from an interrupted download) must NOT be reported as
       // "installed" — otherwise the launcher tries to load it and fails. Flag it corrupt so the
@@ -618,13 +651,17 @@ app.whenReady().then(async () => {
   loadBuiltinManifest();
   registerIpc();
   createWindow();
-  // start aria2 RPC downloader (multi-connection, accurate progress). Non-fatal if it fails:
-  // the single-stream fallback in download-item still works.
-  aria2.startAria2({ configDir: getConfigDir(), baseDir: config.baseDir })
-    .then((ok) => console.log('[aria2] ready=' + ok))
-    .catch((e) => console.error('[aria2] start failed:', e.message));
-  // silent OTA check on startup
-  fetchRemoteManifest().then((r) => { if (r.updated) sendToWin('manifest-updated', { version: r.version }); });
+  // 启动期非关键任务延迟到首屏渲染与首次模型扫描之后，避免子进程拉起 / 网络请求
+  // 与首帧绘制、scanStatus 抢磁盘与 CPU，从而让窗口尽快可用。
+  setTimeout(() => {
+    // start aria2 RPC downloader (multi-connection, accurate progress). Non-fatal if it fails:
+    // the single-stream fallback in download-item still works.
+    aria2.startAria2({ configDir: getConfigDir(), baseDir: config.baseDir })
+      .then((ok) => console.log('[aria2] ready=' + ok))
+      .catch((e) => console.error('[aria2] start failed:', e.message));
+    // silent OTA check on startup
+    fetchRemoteManifest().then((r) => { if (r.updated) sendToWin('manifest-updated', { version: r.version }); });
+  }, 400);
 });
 
 app.on('window-all-closed', () => { stopAllServers(); aria2.stopAria2(); app.quit(); });

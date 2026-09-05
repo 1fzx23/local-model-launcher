@@ -6,7 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- 非阻塞加载字体：避免慢网/离线时渲染被外部样式表卡住，导致首屏空白几秒。
+     CSS 已配置系统字体兜底栈（-apple-system / Segoe UI 等），字体到位前用系统字体，不丑。 -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -107,6 +110,62 @@
           <div class="row">
             <input id="set-threads" type="number" min="0" max="64">
             <button class="primary-btn" id="btn-save-threads">保存</button>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <label>llama.cpp 高级选项（下次启动对话模型 / 本地模型生效）</label>
+          <div class="hint">直接对应 llama-server 启动参数。留空或 0 = 使用默认值，不会下发该参数。多模态模型请在清单里设 <code>mmproj</code> 字段。</div>
+          <div class="adv-grid">
+            <div class="adv-item">
+              <label>上下文长度 -c</label>
+              <input id="adv-ctx" type="number" min="0" placeholder="0=模型默认">
+            </div>
+            <div class="adv-item">
+              <label>批大小 -b</label>
+              <input id="adv-batch" type="number" min="0" placeholder="0=默认2048">
+            </div>
+            <div class="adv-item">
+              <label>GPU 层数 -ngl（0=自动）</label>
+              <input id="adv-ngl" type="number" min="0" placeholder="0=自动99">
+            </div>
+            <div class="adv-item">
+              <label>Flash Attention -fa</label>
+              <select id="adv-fa"><option value="auto">auto</option><option value="on">on</option><option value="off">off</option></select>
+            </div>
+            <div class="adv-item">
+              <label>推理预算 --reasoning-budget</label>
+              <input id="adv-reason" type="number" min="-1" placeholder="0=不思考">
+            </div>
+            <div class="adv-item">
+              <label>并发槽位 -np（-1=自动）</label>
+              <input id="adv-parallel" type="number" min="-1" placeholder="-1=自动">
+            </div>
+            <div class="adv-item adv-check">
+              <label><input id="adv-mlock" type="checkbox"> 锁内存 --mlock</label>
+            </div>
+            <div class="adv-item adv-check">
+              <label><input id="adv-nommap" type="checkbox"> 禁用内存映射 --no-mmap</label>
+            </div>
+            <div class="adv-item adv-check">
+              <label><input id="adv-cb" type="checkbox" checked> 连续批处理 --cont-batching</label>
+            </div>
+            <div class="adv-item">
+              <label>API 密钥 --api-key</label>
+              <input id="adv-apikey" type="text" placeholder="可选">
+            </div>
+            <div class="adv-item">
+              <label>静态查找缓存 -lcs</label>
+              <input id="adv-lcs" type="text" placeholder="可选路径">
+            </div>
+            <div class="adv-item">
+              <label>动态查找缓存 -lcd</label>
+              <input id="adv-lcd" type="text" placeholder="可选路径">
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="primary-btn" id="btn-save-adv">保存高级选项</button>
+            <button class="ghost-btn" id="btn-reset-adv">恢复默认</button>
           </div>
         </div>
       </div>

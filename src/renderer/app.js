@@ -544,6 +544,19 @@ $$('.nav-btn').forEach(b => b.addEventListener('click', () => {
     $('#set-apihost').value = state.config.apiHost || '127.0.0.1';
     $('#set-npredict').value = state.config.nPredict ?? 200;
     $('#set-threads').value = state.config.threads ?? 0;
+    const adv = state.config.advanced || {};
+    $('#adv-ctx').value = adv.ctxSize || '';
+    $('#adv-batch').value = adv.batchSize || '';
+    $('#adv-ngl').value = adv.gpuLayers || '';
+    $('#adv-fa').value = adv.flashAttn || 'auto';
+    $('#adv-reason').value = (adv.reasoningBudget != null ? adv.reasoningBudget : '');
+    $('#adv-parallel').value = (adv.parallel != null ? adv.parallel : '');
+    $('#adv-mlock').checked = !!adv.mlock;
+    $('#adv-nommap').checked = !!adv.noMmap;
+    $('#adv-cb').checked = adv.contBatching !== false;
+    $('#adv-apikey').value = adv.apiKey || '';
+    $('#adv-lcs').value = adv.lookupCacheStatic || '';
+    $('#adv-lcd').value = adv.lookupCacheDynamic || '';
     $('#manifest-ver').textContent = state.manifest.manifestVersion || '-';
   } else if (isDiscover) {
     $('#discover-dir').textContent = (state.config.baseDir || '') + '\\models';
@@ -586,6 +599,29 @@ $('#btn-save-npredict').addEventListener('click', async () => {
 $('#btn-save-threads').addEventListener('click', async () => {
   const r = await window.api.saveConfig({ threads: parseInt($('#set-threads').value, 10) || 0 });
   state.config = r.config; toast('已保存');
+});
+
+// llama.cpp 高级选项：只保存非默认值，避免向 llama-server 下发无意义参数
+$('#btn-save-adv').addEventListener('click', async () => {
+  const adv = {};
+  const ctx = parseInt($('#adv-ctx').value, 10); if (ctx) adv.ctxSize = ctx;
+  const bs = parseInt($('#adv-batch').value, 10); if (bs) adv.batchSize = bs;
+  const ngl = parseInt($('#adv-ngl').value, 10); if (ngl) adv.gpuLayers = ngl;
+  if ($('#adv-fa').value !== 'auto') adv.flashAttn = $('#adv-fa').value;
+  const rb = $('#adv-reason').value.trim(); if (rb !== '') adv.reasoningBudget = parseInt(rb, 10);
+  const np = $('#adv-parallel').value.trim(); if (np !== '') adv.parallel = parseInt(np, 10);
+  if ($('#adv-mlock').checked) adv.mlock = true;
+  if ($('#adv-nommap').checked) adv.noMmap = true;
+  if (!$('#adv-cb').checked) adv.contBatching = false;
+  const ak = $('#adv-apikey').value.trim(); if (ak) adv.apiKey = ak;
+  const lcs = $('#adv-lcs').value.trim(); if (lcs) adv.lookupCacheStatic = lcs;
+  const lcd = $('#adv-lcd').value.trim(); if (lcd) adv.lookupCacheDynamic = lcd;
+  const r = await window.api.saveConfig({ advanced: adv });
+  state.config = r.config; toast('已保存高级选项，下次启动对话模型生效');
+});
+$('#btn-reset-adv').addEventListener('click', async () => {
+  const r = await window.api.saveConfig({ advanced: {} });
+  state.config = r.config; renderAll(); toast('已恢复默认');
 });
 
 // dock

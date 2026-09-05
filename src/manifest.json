@@ -1,6 +1,6 @@
 {
-  "manifestVersion": 10,
-  "updatedAt": "2026-08-20",
+  "manifestVersion": 11,
+  "updatedAt": "2026-09-05",
   "note": "OTA catalog (Windows only). Host a newer copy of this file at config.manifestUrl and bump manifestVersion to push updates (fix URLs / add models) without reinstalling the app.",
   "runtimes": [
     {
@@ -1043,6 +1043,7 @@
       "type": "llm",
       "port": 8080,
       "defaultRuntime": "vulkan",
+      "mmproj": "mmproj-Qwen3VL-4B-Instruct-F16.gguf",
       "sizeText": "2.5+0.8 GB",
       "tags": [
         "多模态",
@@ -1944,6 +1945,18 @@
           "label": "HF镜像",
           "url": "https://hf-mirror.com/bartowski/Qwen_Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen_Qwen3-VL-8B-Instruct-Q4_K_M.gguf"
         }
+      ],
+      "mmproj": "mmproj-Qwen3VL-8B-Instruct-F16.gguf",
+      "extraFiles": [
+        {
+          "file": "mmproj-Qwen3VL-8B-Instruct-F16.gguf",
+          "sources": [
+            {
+              "label": "HF 镜像",
+              "url": "https://hf-mirror.com/Qwen/Qwen3-VL-8B-Instruct-GGUF/resolve/main/mmproj-Qwen3VL-8B-Instruct-F16.gguf"
+            }
+          ]
+        }
       ]
     },
     {
@@ -2462,6 +2475,76 @@
       "page": "https://modelscope.cn/collections/GGUF",
       "sources": [],
       "isLink": true
+    },
+    {
+      "id": "qwen3-vl-2b",
+      "name": "Qwen3-VL-2B-Instruct (视觉)",
+      "file": "Qwen3VL-2B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "vulkan",
+      "mmproj": "mmproj-Qwen3VL-2B-Instruct-F16.gguf",
+      "sizeText": "1.1+0.8 GB",
+      "tags": [
+        "多模态",
+        "视觉",
+        "轻量",
+        "图文理解"
+      ],
+      "desc": "Qwen3 视觉语言模型 2B（最小尺寸），支持图片理解；需搭配 mmproj 投影文件启用视觉（已放入附加文件）。",
+      "page": "https://hf-mirror.com/Qwen/Qwen3-VL-2B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/Qwen/Qwen3-VL-2B-Instruct-GGUF/resolve/main/Qwen3VL-2B-Instruct-Q4_K_M.gguf"
+        }
+      ],
+      "extraFiles": [
+        {
+          "file": "mmproj-Qwen3VL-2B-Instruct-F16.gguf",
+          "sources": [
+            {
+              "label": "HF 镜像",
+              "url": "https://hf-mirror.com/Qwen/Qwen3-VL-2B-Instruct-GGUF/resolve/main/mmproj-Qwen3VL-2B-Instruct-F16.gguf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qwen3-vl-32b",
+      "name": "Qwen3-VL-32B-Instruct (视觉)",
+      "file": "Qwen3VL-32B-Instruct-Q4_K_M.gguf",
+      "type": "llm",
+      "port": 8080,
+      "defaultRuntime": "cuda124",
+      "mmproj": "mmproj-Qwen3VL-32B-Instruct-F16.gguf",
+      "sizeText": "19.8+1.2 GB",
+      "tags": [
+        "多模态",
+        "视觉",
+        "需32GB内存",
+        "GPU推荐"
+      ],
+      "desc": "Qwen3 视觉语言模型 32B（最大尺寸），支持图片理解与 OCR；需搭配 mmproj 投影文件启用视觉。显存占用大，建议 32GB 内存。",
+      "page": "https://hf-mirror.com/Qwen/Qwen3-VL-32B-Instruct-GGUF",
+      "sources": [
+        {
+          "label": "HF 镜像",
+          "url": "https://hf-mirror.com/Qwen/Qwen3-VL-32B-Instruct-GGUF/resolve/main/Qwen3VL-32B-Instruct-Q4_K_M.gguf"
+        }
+      ],
+      "extraFiles": [
+        {
+          "file": "mmproj-Qwen3VL-32B-Instruct-F16.gguf",
+          "sources": [
+            {
+              "label": "HF 镜像",
+              "url": "https://hf-mirror.com/Qwen/Qwen3-VL-32B-Instruct-GGUF/resolve/main/mmproj-Qwen3VL-32B-Instruct-F16.gguf"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
