@@ -3,7 +3,17 @@ node_modules/
 
 # electron-builder output (portable exe goes to GitHub Releases instead)
 dist/
-build/
+
+# build/ holds generated icon previews and builder scratch, but it ALSO holds
+# files the build genuinely needs (icon.ico referenced by package.json,
+# afterPack.js hook, make-icon.py). Ignoring the whole directory makes a fresh
+# clone fail to build — so ignore its generated contents, not the directory.
+build/*
+!build/icon.ico
+!build/icon.png
+!build/icon-preview.png
+!build/afterPack.js
+!build/make-icon.py
 
 # logs
 *.log
@@ -18,3 +28,20 @@ __pycache__/
 
 # local github token (never commit)
 .gh_token
+
+# one-off personal scraping / upload helpers (not part of the app)
+_aria2dl/
+_aria2test/
+_bili/
+add_models.py
+bili_fetch.py
+bili_videos.json
+download.bat
+download.ps1
+upload_chunks.sh
+verify_batch.sh
+_dotnet-install.ps1
+promo.mp4
+
+# agent workspace
+.workbuddy/

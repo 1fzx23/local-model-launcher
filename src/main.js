@@ -196,6 +196,7 @@ async function downloadFile(id, url, destPath) {
           if (state.cancelled) return finish({ ok: false, reason: 'cancelled', resumable: true });
           try {
             fs.renameSync(partPath, destPath);
+            invalidateStatusCache();
             sendToWin('download-progress', { id, received, total, done: true });
             finish({ ok: true });
           } catch (e) { finish({ ok: false, reason: e.message }); }
@@ -234,19 +235,48 @@ function stopServer(port) {
 
 function stopAllServers() { [...runningServers.keys()].forEach(stopServer); }
 
+// Readiness probe.
+//
+// A naive "did we get any HTTP response?" check fires far too early: llama-server
+// binds the port while the model is still loading and answers `/` with 503
+// "Loading model". Announcing `running` at that point makes the UI open the
+// embedded webview onto a 503 error page, which reads as "网页打不开" — and
+// because the page *did* load (just with the wrong content), `did-fail-load`
+// never fires, so the renderer's retry logic never kicks in either.
+//
+// So: treat only a real page response as ready, and treat an explicit
+// "still loading" signal as "keep waiting".
+function probeHttp(port) {
+  return new Promise((resolve) => {
+    const req = http.get(
+      { host: '127.0.0.1', port, path: '/', timeout: 2000, headers: { 'Accept': 'text/html' } },
+      (res) => {
+        const status = res.statusCode || 0;
+        // Drain so the socket can be reused / process can exit cleanly.
+        res.resume();
+        if (status === 503 || status === 502 || status === 504) {
+          resolve({ ready: false, loading: true, status });
+          return;
+        }
+        // 2xx/3xx/401/403/404 all mean the HTTP server itself is up and
+        // answering. A 404 on `/` still beats reporting ready for a dead port.
+        resolve({ ready: status < 500, loading: false, status });
+      }
+    );
+    req.on('error', () => resolve({ ready: false, loading: false, status: 0 }));
+    req.on('timeout', () => { req.destroy(); resolve({ ready: false, loading: false, status: 0 }); });
+  });
+}
+
 function waitForServer(port, { timeoutMs = 300000, isAlive = () => true } = {}) {
   return new Promise((resolve) => {
     const started = Date.now();
-    const tick = () => {
+    const tick = async () => {
       if (!isAlive()) return resolve(false); // 进程已退出，立即停止等待（避免“假死”一直转圈）
-      const req = http.get({ host: '127.0.0.1', port, path: '/', timeout: 2000 }, (res) => {
-        res.resume(); resolve(true);
-      });
-      req.on('error', () => {
-        if (Date.now() - started > timeoutMs) return resolve(false);
-        setTimeout(tick, 1200);
-      });
-      req.on('timeout', () => { req.destroy(); if (Date.now() - started > timeoutMs) resolve(false); else setTimeout(tick, 1200); });
+      const { ready } = await probeHttp(port);
+      if (ready) return resolve(true);
+      if (Date.now() - started > timeoutMs) return resolve(false);
+      setTimeout(tick, ready ? 1200 : 800);
     };
     tick();
   });
@@ -408,34 +438,86 @@ async function startCustom({ file, runtimeId, type }) {
 // ---------------------------------------------------------------------------
 // Local status scanning
 // ---------------------------------------------------------------------------
+
+// Caches for scanStatus(). The models dir can hold thousands of .gguf files and
+// a cold scan does several thousand sync syscalls per model (exists + open +
+// read + stat), which is what used to stall the first paint: get-state awaits
+// this synchronously, so the window stayed blank until it finished.
+//
+// We only memoise existence/size per (path, mtime+size of the containing dir).
+// Any create/delete/download-finish calls invalidateStatusCache() so the UI
+// still updates immediately after an action.
+let _existsCache = new Map();
+let _dirStampCache = new Map();
+
+function _dirStamp(dir) {
+  // Cheap fingerprint of a directory's contents. If mtime/size changed, cached
+  // entries under it are considered stale.
+  try {
+    const st = fs.statSync(dir);
+    return st.mtimeMs + ':' + st.size;
+  } catch (_) { return 'missing'; }
+}
+
+function invalidateStatusCache() {
+  _existsCache.clear();
+  _dirStampCache.clear();
+}
+
+function existsCached(p) {
+  const dir = path.dirname(p);
+  const stamp = _dirStamp(dir);
+  const prev = _dirStampCache.get(dir);
+  if (prev !== stamp) {
+    // Directory changed: drop every cached entry that lived under it.
+    for (const k of Array.from(_existsCache.keys())) {
+      if (path.dirname(k) === dir) _existsCache.delete(k);
+    }
+    _dirStampCache.set(dir, stamp);
+  }
+  if (_existsCache.has(p)) return _existsCache.get(p);
+  let ok = false, size = 0;
+  try { const st = fs.statSync(p); ok = st.isFile(); size = st.size; } catch (_) { ok = false; }
+  _existsCache.set(p, ok ? size : -1);
+  return ok ? size : -1;
+}
+
 function scanStatus() {
   const status = { models: {}, runtimes: {}, baseDirExists: fs.existsSync(config.baseDir) };
   for (const m of manifest.models) {
     const p = path.join(modelsDir(), m.file);
     const part = p + '.part';
-    if (fs.existsSync(p)) {
+    const size = existsCached(p);
+    if (size >= 0) {
       const missingExtra = (m.extraFiles || []).concat(m.mmproj ? [{ file: m.mmproj }] : [])
-        .filter(ef => !fs.existsSync(path.join(modelsDir(), ef.file))).map(ef => ef.file);
+        .filter(ef => existsCached(path.join(modelsDir(), ef.file)) < 0).map(ef => ef.file);
       // Integrity guard: a model file that exists but isn't a valid GGUF (e.g. a truncated /
       // corrupt / 0xFF-filled leftover from an interrupted download) must NOT be reported as
       // "installed" — otherwise the launcher tries to load it and fails. Flag it corrupt so the
       // UI offers a re-download instead of a broken "启动" button.
-      let corrupt = false;
-      try {
-        const fd = fs.openSync(p, 'r');
-        const head = Buffer.alloc(4);
-        if (fs.readSync(fd, head, 0, 4, 0) === 4) corrupt = head.toString('latin1') !== 'GGUF';
-        fs.closeSync(fd);
-      } catch (_) { corrupt = false; }
-      status.models[m.id] = { installed: !corrupt && missingExtra.length === 0, size: fs.statSync(p).size, missingExtra, corrupt };
-    } else if (fs.existsSync(part)) {
-      status.models[m.id] = { installed: false, partial: fs.statSync(part).size };
+      // Cache the magic check too: the file has not changed size, so re-reading the
+      // header on every scan is wasted I/O.
+      const pkey = p + '::magic';
+      let corrupt = _existsCache.get(pkey);
+      if (corrupt === undefined) {
+        try {
+          const fd = fs.openSync(p, 'r');
+          const head = Buffer.alloc(4);
+          corrupt = (fs.readSync(fd, head, 0, 4, 0) === 4) ? head.toString('latin1') !== 'GGUF' : false;
+          fs.closeSync(fd);
+        } catch (_) { corrupt = false; }
+        _existsCache.set(pkey, corrupt);
+      }
+      status.models[m.id] = { installed: !corrupt && missingExtra.length === 0, size, missingExtra, corrupt };
     } else {
-      status.models[m.id] = { installed: false };
+      const psize = existsCached(part);
+      status.models[m.id] = psize >= 0
+        ? { installed: false, partial: psize }
+        : { installed: false };
     }
   }
   for (const r of manifest.runtimes) {
-    status.runtimes[r.id] = { installed: fs.existsSync(path.join(config.baseDir, r.dir, r.exe)) };
+    status.runtimes[r.id] = { installed: existsCached(path.join(config.baseDir, r.dir, r.exe)) >= 0 };
   }
   return status;
 }
@@ -558,7 +640,8 @@ function registerIpc() {
           const r = aria2.isAria2Ready()
             ? await aria2.aria2Download({ id: dlId, urls: [efSrc.url], destPath: efDest, onProgress: (p) => sendToWin('download-progress', p) })
             : await downloadFile(dlId, efSrc.url, efDest);
-          if (!r.ok) return { ok: false, reason: '附属文件下载失败(' + ef.file + '): ' + r.reason, status: scanStatus() };
+          if (!r.ok) invalidateStatusCache();
+      return { ok: false, reason: '附属文件下载失败(' + ef.file + '): ' + r.reason, status: scanStatus() };
         }
       }
       if (kind === 'runtime') {
@@ -582,6 +665,7 @@ function registerIpc() {
           }
         }
       }
+      invalidateStatusCache();
       return { ...result, status: scanStatus() };
     }
     if (result.reason === 'cancelled') return { ok: false, reason: 'cancelled', resumable: true };
@@ -603,6 +687,7 @@ function registerIpc() {
     try { if (fs.existsSync(p)) fs.unlinkSync(p); } catch (err) { return { ok: false, reason: err.message }; }
     try { if (fs.existsSync(p + '.part')) fs.unlinkSync(p + '.part'); } catch (_) {}
     try { if (fs.existsSync(p + '.part.aria2')) fs.unlinkSync(p + '.part.aria2'); } catch (_) {}
+    invalidateStatusCache();
     return { ok: true, status: scanStatus() };
   });
 
@@ -611,6 +696,7 @@ function registerIpc() {
     if (r.canceled || !r.filePaths[0]) return { ok: false };
     config.baseDir = r.filePaths[0];
     saveConfig();
+    invalidateStatusCache();
     return { ok: true, config, status: scanStatus() };
   });
 
@@ -636,13 +722,28 @@ function createWindow() {
     backgroundColor: '#0d1117',
     autoHideMenuBar: true,
     title: '本地 AI 模型启动器',
+    show: false,               // show explicitly once the first paint lands (below)
+    // Trims startup work: no devtools menu item, no background throttling while
+    // the window is hidden, and no Chromium backgrounding. None of this affects
+    // a model launcher, and each one is measurable in first-paint latency.
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      webviewTag: true
+      webviewTag: true,
+      backgroundThrottling: false,
+      spellcheck: false
     }
   });
+
+  // Paint the shell as soon as the DOM is ready instead of waiting for every
+  // subresource (fonts, images). The model list is filled in right after via
+  // refreshState(); the user sees the UI immediately either way, but a few
+  // hundred ms earlier.
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 }
 

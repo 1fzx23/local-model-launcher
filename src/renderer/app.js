@@ -297,7 +297,37 @@ function openDock(port, tab) {
   t.scrollTop = t.scrollHeight;
   if (run && run.url) {
     const wv = $('#webview');
-    if (wv.getAttribute('src') !== run.url) wv.setAttribute('src', run.url);
+    // Load via the DOM `src` property and guard against redundant reloads.
+    //
+    // Two traps this avoids:
+    //  1. `reload()` is the direct cause of ERR_FAILED here. Reloading a
+    //     webview repeatedly (openDock runs on every renderAll) piles up
+    //     navigations until the guest aborts with ERR_FAILED, which the user
+    //     sees as "网页加载失败". Re-assigning `src` to the same URL is a no-op,
+    //     so we only act when something actually changed.
+    //  2. `setAttribute('src', ...)` before the element is attached races the
+    //     webview's own initialisation; assigning the property is the
+    //     documented, more reliable path.
+    const cur = wv.getAttribute('src') || '';
+    const sameUrl = cur === run.url;
+    const wasRunning = wv.dataset.runState === 'running';
+    wv.dataset.runState = run.status;
+
+    if (!sameUrl) {
+      wv.src = run.url;
+    } else if (run.status === 'running' && !wasRunning) {
+      // Same port, but the service just became ready again (restart). Re-point
+      // the src to force a clean document instead of a reload().
+      wv.src = 'about:blank';
+      // Give the guest a tick to settle on about:blank before navigating,
+      // otherwise the two assignments collapse into one and the old error
+      // page sticks around.
+      setTimeout(() => {
+        if (wv.getAttribute('src') === 'about:blank') {
+          try { wv.src = run.url; } catch (_) { }
+        }
+      }, 120);
+    }
     webRetry = 0; // 进入新的服务预览，重置自动重试计数
     $('#web-url').value = run.url;
     $('#web-placeholder').classList.add('hidden');
@@ -627,9 +657,34 @@ $('#btn-reset-adv').addEventListener('click', async () => {
 // dock
 $$('.dock-tab').forEach(b => b.addEventListener('click', () => switchDockTab(b.dataset.tab)));
 $('#dock-toggle').addEventListener('click', () => $('#dock').classList.toggle('collapsed'));
-$('#web-reload').addEventListener('click', () => { webRetry = 0; try { $('#webview').reload(); } catch (_) {} });
+$('#web-reload').addEventListener('click', () => { webRetry = 0; retryWebviewLoad(true); });
 $('#web-back').addEventListener('click', () => { try { $('#webview').goBack(); } catch (_) {} });
 $('#web-external').addEventListener('click', () => { const u = $('#web-url').value; if (u) window.api.openExternal(u); });
+
+// Re-navigate the embedded webview without using reload().
+//
+// `webview.reload()` is the direct source of ERR_FAILED ("网页加载失败"):
+// repeated reloads stack up navigations and the guest eventually aborts. Every
+// automatic path in this file therefore re-points `src` instead, going through
+// about:blank first so the previous document is torn down cleanly. A user
+// clicking 刷新 gets the same treatment.
+function retryWebviewLoad(force) {
+  const wv = $('#webview');
+  if (!wv) return;
+  const run = state.running.find(r => r.port === activeDockPort);
+  const url = (run && run.url) ? run.url : (wv.getAttribute('src') || '');
+  if (!/^https?:\/\//i.test(url)) return;
+  try {
+    wv.src = 'about:blank';
+    setTimeout(() => {
+      // Bail if something else navigated in the meantime (user hit 返回, or
+      // switched to a different server) — don't yank them back.
+      if (wv.getAttribute('src') === 'about:blank') {
+        try { wv.src = url; } catch (_) { }
+      }
+    }, force ? 60 : 150);
+  } catch (_) { }
+}
 
 // webview: 优雅处理「返回的是 API 接口 JSON / 纯文本」而非网页的情况
 (() => {
@@ -663,23 +718,58 @@ $('#web-external').addEventListener('click', () => { const u = $('#web-url').val
         const run = state.running.find(r => r.port === activeDockPort);
         const api = (run && run.apiUrl) ? run.apiUrl : `http://127.0.0.1:${activeDockPort}/v1`;
         showFallback(`这里显示的是模型服务的 <b>API 接口原始返回</b>（不是网页界面）。<br>请在左侧「运行中服务」里复制 API 地址 <code>${api}</code>，填到其它 AI 软件中调用。`);
+        return;
+      }
+      // A 503 "Loading model" error page is served as text/html, so the
+      // contentType check above happily accepts it — and because the document
+      // loaded fine, did-fail-load never fires and the retry path below is
+      // never reached. Detect it explicitly and retry instead of leaving the
+      // user staring at an error page.
+      const stillLoading = await wv.executeJavaScript(
+        '(function(){try{var t=document.body?(document.body.innerText||""):"";' +
+        'return /loading model|正在加载|loading\\.\\.\\./i.test(t.slice(0,400));}catch(e){return false;}})()'
+      );
+      if (stillLoading && webRetry < 6) {
+        webRetry++;
+        loading.classList.remove('hidden');
+        setTimeout(() => { retryWebviewLoad(); }, 3000);
+        return;
       }
     } catch (_) { fb.classList.add('hidden'); }
   });
   wv.addEventListener('dom-ready', () => { hideLoading(); }); // 可靠的完成信号，双保险
   wv.addEventListener('did-fail-load', (event) => {
+    // Sub-resource failures (a missing icon, a blocked CDN font) also emit this
+    // event. Reloading the whole document because one asset 404'd is both
+    // useless and the fastest way to trigger ERR_FAILED, so only the main
+    // frame counts as "the page didn't load".
+    if (event && event.isMainFrame === false) return;
     // 服务仍在运行 → 多半是模型还在加载 / 首次请求竞态，自动重试几次（每次间隔 3s，最多 6 次）
     const run = state.running.find(r => r.port === activeDockPort);
     if (run && run.status === 'running' && webRetry < 6) {
       webRetry++;
       fb.classList.add('hidden');
       loading.classList.remove('hidden');
-      setTimeout(() => { try { wv.reload(); } catch (_) {} }, 3000);
+      setTimeout(() => { retryWebviewLoad(); }, 3000);
       return;
     }
     webRetry = 0;
     const detail = (event && event.errorDescription) ? `（${event.errorDescription}）` : '';
-    showFallback('网页加载失败' + detail + '：服务可能还在启动，或该运行环境不提供网页界面。可点上方「刷新」按钮重试，或复制 API 地址在其它 AI 软件中使用。');
+    // Always offer the escape hatch: the API is reachable even when the embedded
+    // view can't render it, and a plain browser is a guaranteed fallback.
+    const run2 = state.running.find(r => r.port === activeDockPort);
+    const url2 = (run2 && run2.url) ? run2.url : $('#web-url').value;
+    const api2 = (run2 && run2.apiUrl) ? run2.apiUrl : `http://127.0.0.1:${activeDockPort}/v1`;
+    showFallback(
+      `网页加载失败${detail}：服务可能还在启动，或该运行环境不提供网页界面。<br>` +
+      `可点上方「刷新」重试，或` +
+      (url2 ? `<a href="#" id="fb-open">用系统浏览器打开</a>，` : '') +
+      `复制 API 地址 <code>${api2}</code> 到其它 AI 软件中使用。`
+    );
+    const btn = document.getElementById('fb-open');
+    if (btn) {
+      btn.addEventListener('click', (ev) => { ev.preventDefault(); window.api.openExternal(url2); });
+    }
   });
 })();
 
@@ -751,7 +841,16 @@ window.api.onServerStatus((d) => {
     if (d.apiUrl) run.apiUrl = d.apiUrl;
     if (d.status === 'running' && d.url) {
       toast((d.name || '服务') + ' 已就绪，网页界面已加载');
-      if (activeDockPort === d.port || activeDockPort === null) openDock(d.port, 'web');
+      // Don't yank the user into the web pane the instant the port answers.
+      // llama-server reports ready while its WebUI is still assembling assets,
+      // so opening immediately often lands on a half-built page. Show the log
+      // first and switch over a beat later.
+      if (activeDockPort === d.port || activeDockPort === null) {
+        openDock(d.port, 'term');
+        setTimeout(() => {
+          if (activeDockPort === d.port) openDock(d.port, 'web');
+        }, 800);
+      }
     }
   }
   renderAll();
