@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>本地 AI 模型启动器 — 一键在本地跑大模型</title>
+<meta name="description" content="开源的本地大模型图形启动器。下载模型、一键启动、浏览器里直接对话。66 MB 单文件，无需安装。">
+<style>
+  /* ------------------------------------------------------------------
+     Design tokens — restrained, near-monochrome with a single blue accent.
+     Deliberately light: generous whitespace carries the layout, not borders.
+     ------------------------------------------------------------------ */
+  :root{
+    --bg:#ffffff;
+    --bg-tint:#f7f8fa;
+    --text:#0d0d0d;
+    --text-2:#5c5c5c;
+    --text-3:#8a8a8a;
+    --line:#e8e8e8;
+    --line-2:#f0f0f0;
+    --accent:#2b5cff;
+    --accent-soft:rgba(43,92,255,.08);
+    --accent-line:rgba(43,92,255,.18);
+    --radius:14px;
+    --maxw:1080px;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Consolas,"Cascadia Mono","Microsoft YaHei Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    /* One overflowing element (a wide table, a long URL, a big CJK headline)
+       otherwise forces the whole page to scroll sideways on phones. */
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--accent-soft);color:var(--text)}
+  a{color:inherit;text-decoration:none}
+
+  /* The header is fixed, so the page needs to start below it. */
+  main{padding-top:64px}
+  @media(max-width:820px){ main{padding-top:58px} }
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* ---------------- top bar ---------------- */
+  /* DeepSeek-style island bar. At rest it's a full-width flat header; once the
+     page scrolls it collapses into a small centred pill that floats above the
+     content — the "dynamic island" behaviour. */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    padding:0 20px;
+    pointer-events:none;
+    transform:translateY(0);
+    transition:transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  /* Nudge the whole bar down a touch as it collapses so the pill reads as
+     lifting off the page rather than just squashing in place. */
+  .topbar.island{transform:translateY(4px)}
+  .bar{
+    max-width:var(--maxw);margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    height:64px;
+    /* Two stacked layers: an opaque-ish tint that CAN animate, plus the
+       backdrop-filter for the actual frosting. Animating background-color
+       gives a reliable cross-fade, whereas transitioning backdrop-filter
+       itself is not interpolated by Chromium. */
+    background:rgba(255,255,255,.55);
+    backdrop-filter:saturate(200%) blur(28px);
+    -webkit-backdrop-filter:saturate(200%) blur(28px);
+    border:1px solid transparent;
+    border-radius:16px;
+    transition:
+      height .42s cubic-bezier(.22,1,.36,1),
+      background-color .38s ease,
+      border-color .38s ease,
+      box-shadow .42s cubic-bezier(.22,1,.36,1),
+      max-width .42s cubic-bezier(.22,1,.36,1),
+      border-radius .42s cubic-bezier(.22,1,.36,1);
+    pointer-events:auto;
+  }
+  /* --- collapsed / floating state --- */
+  .topbar.island .bar{
+    height:56px;
+    max-width:min(860px,calc(100vw - 80px));
+    margin-top:14px;
+    /* Lighter tint + heavier blur = more frosting while still letting the
+       saturate/blur difference carry the transition smoothly. */
+    background:rgba(255,255,255,.42);
+    backdrop-filter:saturate(230%) blur(46px);
+    -webkit-backdrop-filter:saturate(230%) blur(46px);
+    border-color:rgba(255,255,255,.72);
+    border-radius:999px;
+    box-shadow:
+      0 1px 2px rgba(16,24,40,.05),
+      0 12px 32px -10px rgba(16,24,40,.18),
+      inset 0 1px 0 rgba(255,255,255,.85);
+  }
+  /* Collapsing the bar. Everything that changes gets an explicit transition —
+     anything left untransitioned snaps and kills the "alive" feel. The wordmark
+     scales down rather than reflowing, and the CTA fades out slightly ahead of
+     the bar's own resize so the motion reads as a sequence, not one jump. */
+  .brand{
+    display:flex;align-items:center;gap:9px;
+    font-weight:600;font-size:16px;letter-spacing:-.012em;
+    transform-origin:left center;
+    transition:transform .5s cubic-bezier(.22,1,.36,1),
+               gap .5s cubic-bezier(.22,1,.36,1);
+    will-change:transform;
+  }
+  .brand .brand-name{
+    transition:opacity .3s ease;
+    white-space:nowrap;
+  }
+  .brand-mark{
+    width:28px;height:28px;flex:none;display:block;object-fit:contain;
+    border-radius:7px;
+    transition:width .5s cubic-bezier(.22,1,.36,1),
+               height .5s cubic-bezier(.22,1,.36,1),
+               border-radius .5s cubic-bezier(.22,1,.36,1);
+  }
+  .topbar.island .brand{gap:8px}
+  .topbar.island .brand-mark{width:25px;height:25px;border-radius:6px}
+  .topbar.island .brand .brand-name{font-size:15px}
+  /* Fade out with a slight delay so it feels like it reacts to the collapse. */
+  .topbar.island .topbar-cta{
+    opacity:0;pointer-events:none;
+    transition:opacity .26s ease .1s;
+  }
+  .topbar-cta{
+    font-size:14.5px;font-weight:500;color:var(--accent);
+    transition:opacity .34s ease;
+  }
+  /* With the CTA gone, re-centre the links against the bar itself — otherwise
+     justify-content:space-between leaves them drifting right of the middle. */
+  .topbar.island .brand{position:absolute;left:20px;top:50%;transform:translateY(-50%) scale(.92)}
+  .topbar.island .bar{position:relative;justify-content:center}
+
+  nav{
+    position:absolute;left:50%;transform:translateX(-50%);
+    display:flex;gap:34px;font-size:14.5px;color:var(--text-2);
+    white-space:nowrap;
+  }
+  nav a{position:relative;padding:2px 0;transition:color .16s}
+  nav a::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;
+    height:1.5px;background:var(--accent);
+    transform:scaleX(0);transform-origin:center;
+    transition:transform .2s cubic-bezier(.22,1,.36,1);
+  }
+  nav a:hover{color:var(--text)}
+  nav a:hover::after{transform:scaleX(1)}
+  .topbar-cta:hover{opacity:.72}
+  @media(max-width:820px){
+    nav{display:none}
+    .topbar .bar{height:58px}
+    .topbar.island .bar{
+      height:52px;
+      max-width:calc(100vw - 32px);
+      margin-top:10px;
+      backdrop-filter:saturate(200%) blur(30px);
+      -webkit-backdrop-filter:saturate(200%) blur(30px);
+    }
+    .topbar.island .brand .brand-name{display:none}
+    .topbar-mini{display:flex;gap:18px;font-size:14px;color:var(--text-2)}
+    .topbar-mini a:hover{color:var(--text)}
+  }
+  @media(min-width:821px){ .topbar-mini{display:none} }
+
+  /* ---------------- hero ---------------- */
+  .hero{padding:112px 0 96px;text-align:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:12.5px;color:var(--text-2);
+    background:var(--bg-tint);
+    border:1px solid var(--line);
+    padding:5px 13px;border-radius:999px;
+    margin-bottom:30px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  h1{
+    font-size:clamp(30px,6.4vw,66px);
+    line-height:1.16;
+    letter-spacing:-.035em;
+    font-weight:680;
+    margin-bottom:26px;
+    /* CJK glyphs are full-width: at a 38px floor a 7-character line already
+       overflows a 390px phone, so lower the floor and allow wrapping mid-phrase
+       (Chinese wraps per character; keep-all would forbid that entirely). */
+    overflow-wrap:break-word;
+    text-wrap:balance;
+  }
+  /* The one emphasised span, the way DeepSeek sets a single phrase in blue. */
+  h1 em{font-style:normal;color:var(--accent)}
+  .lede{
+    font-size:clamp(16px,1.9vw,19px);
+    color:var(--text-2);
+    max-width:600px;margin:0 auto;
+    line-height:1.75;
+    /* text-wrap has weak CJK support, so the copy is written to break on
+       natural punctuation boundaries instead of relying on the browser. */
+  }
+  .cta-row{
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+    margin-top:42px;
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:15px;font-weight:520;
+    padding:12px 26px;border-radius:11px;
+    transition:transform .15s, box-shadow .15s, background .15s, border-color .15s;
+    will-change:transform;
+  }
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 1px 2px rgba(43,92,255,.24),0 8px 20px -8px rgba(43,92,255,.4)}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(43,92,255,.24),0 14px 28px -10px rgba(43,92,255,.46)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-ghost{border:1px solid var(--line);color:var(--text);background:#fff}
+  .btn-ghost:hover{border-color:#d4d4d4;background:var(--bg-tint);transform:translateY(-1px)}
+  .meta{margin-top:22px;font-size:13px;color:var(--text-3)}
+  .meta code{font-family:var(--mono);background:var(--bg-tint);padding:2px 7px;border-radius:5px;font-size:12.5px}
+
+  /* ---------------- section shell ---------------- */
+  section{padding:88px 0;border-top:1px solid var(--line-2)}
+  .sec-head{text-align:center;margin-bottom:56px}
+  .sec-head h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.025em;font-weight:660;margin-bottom:14px}
+  .sec-head p{color:var(--text-2);font-size:16px;max-width:560px;margin:0 auto}
+
+  /* ---------------- feature grid ---------------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1px;
+    background:var(--line-2);
+    border:1px solid var(--line-2);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .cell{background:#fff;padding:34px 30px;transition:background .2s}
+  .cell:hover{background:var(--bg-tint)}
+  .cell-ico{
+    width:34px;height:34px;border-radius:9px;
+    background:var(--accent-soft);
+    display:grid;place-items:center;
+    color:var(--accent);
+    margin-bottom:20px;
+  }
+  .cell h3{font-size:16.5px;font-weight:600;letter-spacing:-.012em;margin-bottom:10px}
+  .cell p{font-size:14.5px;color:var(--text-2);line-height:1.72;text-wrap:pretty}
+  .cell .stat{
+    display:inline-block;margin-top:18px;
+    font-family:var(--mono);font-size:12.5px;color:var(--accent);
+    background:var(--accent-soft);
+    padding:3px 9px;border-radius:6px;
+  }
+
+  /* ---------------- steps ---------------- */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:40px;counter-reset:s}
+  .step{counter-increment:s;position:relative;padding-top:34px}
+  .step::before{
+    content:counter(s,decimal-leading-zero);
+    font-family:var(--mono);font-size:12.5px;
+    color:var(--accent);background:var(--accent-soft);
+    width:30px;height:30px;border-radius:8px;
+    display:grid;place-items:center;
+    position:absolute;top:0;left:0;
+  }
+  .step h3{font-size:16px;font-weight:600;margin-bottom:9px}
+  .step p{font-size:14.5px;color:var(--text-2);line-height:1.7;text-wrap:pretty}
+
+  /* ---------------- download ---------------- */
+  .dl{
+    background:var(--bg-tint);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:44px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:36px;flex-wrap:wrap;
+  }
+  .dl-info h3{font-size:20px;font-weight:620;letter-spacing:-.018em;margin-bottom:10px}
+  .dl-info p{font-size:14.5px;color:var(--text-2);max-width:440px}
+  .dl-facts{display:flex;gap:34px;margin-top:22px;flex-wrap:wrap}
+  .fact .k{font-size:11.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+  .fact .v{font-family:var(--mono);font-size:15px;color:var(--text);font-weight:500}
+  .dl-actions{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+  .req{font-size:12.5px;color:var(--text-3);text-align:center;margin-top:4px}
+
+  /* ---------------- footer ---------------- */
+  footer{border-top:1px solid var(--line-2);padding:44px 0;margin-top:0}
+  .foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px}
+  .foot p{font-size:13.5px;color:var(--text-3)}
+  .foot nav{gap:22px;font-size:13.5px}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  @media(max-width:640px){
+    .hero{padding:76px 0 68px}
+    .dl{padding:30px 26px}
+    .dl-actions{width:100%}
+    .btn{width:100%;justify-content:center}
+    .lede{font-size:15.5px}
+    h1{font-size:clamp(27px,8.2vw,38px);letter-spacing:-.02em;margin-bottom:20px}
+    .eyebrow{margin-bottom:24px;font-size:12px}
+    .cta-row{margin-top:34px}
+    section{padding:64px 0}
+    .sec-head{margin-bottom:40px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none;transition:none}
+    .btn:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="bar">
+    <div class="brand"><img class="brand-mark" src="favicon.png" width="28" height="28" alt=""><span class="brand-name">本地 AI 模型启动器</span></div>
+    <nav>
+      <a href="#features">功能</a>
+      <a href="#how">使用</a>
+      <a href="#download">下载</a>
+    </nav>
+    <div class="topbar-mini">
+      <a href="#features">功能</a>
+      <a href="#download">下载</a>
+    </div>
+    <a class="topbar-cta" href="#download">免费下载</a>
+  </div>
+</header>
+
+<main>
+  <!-- ================= hero ================= -->
+  <section class="hero" style="border-top:none">
+    <div class="wrap">
+      <div class="eyebrow"><span class="dot"></span>开源 · v1.5.0 · 66 MB 单文件</div>
+      <h1>把大模型，<em>装进你自己的电脑</em></h1>
+      <p class="lede">
+        图形化启动本地大模型与 Stable Diffusion。下载、断点续传、一键启动，浏览器里直接对话——
+        不用会敲命令行，也不用注册云端账号。
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#download">免费下载
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/1fzx23/local-model-launcher" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.4-5.25 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+          查看源码
+        </a>
+      </div>
+      <p class="meta">Windows x64 · 免安装 · 整个文件夹拷走就能换电脑</p>
+    </div>
+  </section>
+
+  <!-- ================= features ================= -->
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>它替你做了什么</h2>
+        <p>本地大模型的门槛不在模型本身，而在环境、依赖和命令行。这里把它们都收进一个界面。</p>
+      </div>
+      <div class="grid">
+
+        <div class="cell reveal">
+          <div class="cell-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </div>
+          <h3>断点续传下载</h3>
+          <p>多线程分片下载，几 GB 的模型也不怕中断。关掉重开能接着下，多镜像自动切换，损坏文件会被识别出来提示重下。</p>
+          <span class="stat">分片并行 · 断点恢复</span>
+        </div>
+
+        <div class="cell reveal">
+          <div class="cell-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-3 8h6l-3 12"/></svg>
+          </div>
+          <h3>一键启动</h3>
+          <p>自动挑选运行库（CPU / CUDA / Vulkan / SYCL），替你拼好参数。日志实时输出，服务就绪后网页界面直接内嵌显示。</p>
+          <span class="stat">自动选后端</span>
+        </div>
+
+        <div class="cell reveal">
+          <div class="cell-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.8" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L7 20"/></svg>
+          </div>
+          <h3>多模态模型</h3>
+          <p>Qwen-VL、Gemma 3 等视觉语言模型开箱可用，投影文件随模型一起下载，启动时自动挂载，看图、看文档都能问。</p>
+          <span class="stat">7 个视觉模型</span>
+        </div>
+
+        <div class="cell reveal">
+          <div class="cell-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </div>
+          <h3>文生图</h3>
+          <p>同样的界面管理 Stable Diffusion 模型，一键起服务，参数可视化调节，生成结果直接内嵌预览。</p>
+          <span class="stat">SD 模型同管</span>
+        </div>
+
+        <div class="cell reveal">
+          <div class="cell-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/><path d="M2 20h4"/></svg>
+          </div>
+          <h3>高级参数</h3>
+          <p>上下文长度、批大小、GPU 层数、Flash Attention、并行槽位、API Key……默认值不写进命令行，改了才生效。</p>
+          <span class="stat">llama.cpp 全量映射</span>
+        </div>
+
+        <div class="cell reveal">
+          <div class="cell-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>随时接进任何软件</h3>
+          <p>服务起来后就是一个标准 OpenAI 兼容接口，地址一键复制，粘进任意 AI 客户端就能用。</p>
+          <span class="stat">OpenAI 兼容 API</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= how ================= -->
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>三步开始</h2>
+        <p>没有安装向导，没有依赖列表，没有环境变量。</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <h3>下载并解压</h3>
+          <p>单个 exe，双击即用。首次运行会在同级目录建一个 <code style="font-family:var(--mono);font-size:13px">model-data/</code> 存放模型和运行库。</p>
+        </div>
+        <div class="step reveal">
+          <h3>选模型，下载</h3>
+          <p>界面里挑模型或运行环境，点下载。断点续传，中断了也不怕，下次接着来。</p>
+        </div>
+        <div class="step reveal">
+          <h3>点启动，开始用</h3>
+          <p>等日志出现就绪，右侧网页面板直接开始对话。API 地址复制走，随便接哪个客户端。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= download ================= -->
+  <section id="download">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>下载 v1.5.0</h2>
+      </div>
+      <div class="dl">
+        <div class="dl-info">
+          <h3>本地AI模型启动器-1.5.0</h3>
+          <p>Windows x64 单文件便携版。下载后直接双击运行，无需安装程序，也不会往系统里装东西。</p>
+          <div class="dl-facts">
+            <div class="fact"><div class="k">体积</div><div class="v">66 MB</div></div>
+            <div class="fact"><div class="k">支持系统</div><div class="v">Windows 10+</div></div>
+            <div class="fact"><div class="k">授权</div><div class="v">MIT</div></div>
+            <div class="fact"><div class="k">是否联网</div><div class="v">仅下载时</div></div>
+          </div>
+        </div>
+        <div class="dl-actions">
+          <a class="btn btn-primary" href="https://github.com/1fzx23/local-model-launcher/releases/download/v1.5.0/LocalModelLauncher-1.5.0.exe" download>
+            下载 Windows 版
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <p class="req">模型需另行在应用内下载</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <p>本地 AI 模型启动器 · 基于 llama.cpp 与 Stable Diffusion.cpp</p>
+    <nav>
+      <a href="https://github.com/1fzx23/local-model-launcher" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/1fzx23/local-model-launcher/releases" target="_blank" rel="noopener">历史版本</a>
+      <a href="https://github.com/1fzx23/local-model-launcher/issues" target="_blank" rel="noopener">反馈问题</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Fade sections in as they scroll into view. Respects prefers-reduced-motion
+  // via the CSS fallback, so nothing here needs a guard.
+  (function () {
+    var items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+    items.forEach(function (el, i) {
+      el.style.transitionDelay = (i % 3) * 70 + 'ms';   // slight stagger per row
+      io.observe(el);
+    });
+  })();
+
+  // Header collapses into a floating pill past the hero, and expands again on
+  // the way back up. Two thresholds (hysteresis) keep it from flickering when
+  // the user hovers right at the boundary.
+  (function () {
+    var bar = document.getElementById('topbar');
+    if (!bar) return;
+    var COLLAPSE = 90, EXPAND = 40, collapsed = false;
+
+    function apply(next) {
+      if (next === collapsed) return;
+      collapsed = next;
+      bar.classList.toggle('island', collapsed);
+    }
+
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var y = window.pageYOffset || document.documentElement.scrollTop;
+        apply(y > COLLAPSE);
+        ticking = false;
+      });
+    }
+
+    var expandTimer = null;
+    // Scrolling back up should restore the full bar immediately-ish; scrolling
+    // down needs a moment of commitment so a small bounce doesn't re-expand it.
+    window.addEventListener('scroll', function () {
+      var y = window.pageYOffset || document.documentElement.scrollTop;
+      if (y <= EXPAND) {
+        clearTimeout(expandTimer);
+        expandTimer = setTimeout(function () { apply(false); }, 90);
+      } else {
+        clearTimeout(expandTimer);
+        onScroll();
+      }
+    }, { passive: true });
+    onScroll();
+  })();
+</script>
+
+</body>
+</html>
