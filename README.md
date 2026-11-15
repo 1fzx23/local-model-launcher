@@ -20,10 +20,6 @@
 - **运行环境**页：下载并自动解压 llama.cpp / stable-diffusion.cpp 各后端（CPU / Vulkan / CUDA / SYCL / HIP / OpenVINO）。
 - **设置**页：改模型仓库目录、OTA 清单地址、`-n` 生成长度、CPU 线程数。
 
-## 内置可直接启动（本机已有文件）
-
-CPU 文本模型全部 + Qwen2.5-1.5B；其余模型需在应用内下载。
-
 ## OTA 清单更新
 
 应用启动时自动从「设置 → OTA 清单地址」拉取 `manifest.json`；云端 `manifestVersion` 更大时自动覆盖内置目录（新增模型、修正下载地址均无需重装应用）。
